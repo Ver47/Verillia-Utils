@@ -1,0 +1,6 @@
+- Name: Verillia_Utils
+  Version: 0.1.0
+  DLL: bin/Verillia_Utils.dll
+  Dependencies:
+    - Name: EverestCore
+      Version: 1.4457.0

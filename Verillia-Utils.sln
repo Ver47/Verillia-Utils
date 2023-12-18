@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Verillia-Utils", "Verillia-Utils.csproj", "{51A7FC61-2B84-46BB-A847-477B77AD3F23}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{51A7FC61-2B84-46BB-A847-477B77AD3F23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51A7FC61-2B84-46BB-A847-477B77AD3F23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51A7FC61-2B84-46BB-A847-477B77AD3F23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51A7FC61-2B84-46BB-A847-477B77AD3F23}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F3D2D1E8-ED9C-4679-91F8-306E5D18C927}
+	EndGlobalSection
+EndGlobal
