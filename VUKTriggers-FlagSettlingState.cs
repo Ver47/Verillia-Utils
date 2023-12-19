@@ -12,7 +12,7 @@ using Monocle;
 namespace Celeste.Mod.Verillia.Utils
 {
     [CustomEntity("Verillia/Utils/FlagSettlingStateTrigger")]
-    internal class FlagSettlingStateTrigger : Trigger
+    public class FlagSettlingStateTrigger : Trigger
     {
         public enum Types
         {

@@ -16,7 +16,7 @@ namespace Celeste.Mod.Verillia.Utils
         "Verillia/Utils/NumFlag/Float=Float",
         "Verillia/Utils/NumFlag/Int=Int"
         )]
-    internal class Variable : Entity
+    public class Variable : Entity
     {
         public Variable():base() { }
 

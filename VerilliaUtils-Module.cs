@@ -40,19 +40,19 @@ namespace Celeste.Mod.Verillia.Utils {
         }
 
         public void LoadBeforeLevel() {
-            On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
+            
 
             // TODO: apply any hooks that should only be active while a level is loaded
         }
 
         public void UnloadAfterLevel() {
-            On.Celeste.Mod.AssetReloadHelper.ReloadLevel -= AssetReloadHelper_ReloadLevel;
+            
 
             // TODO: unapply any hooks applied in LoadBeforeLevel()
         }
 
-        private void AssetReloadHelper_ReloadLevel(On.Celeste.Mod.AssetReloadHelper.orig_ReloadLevel orig) {
-            orig();
+        private void AssetReloadHelper_ReloadLevel() {
+            
 
             // TODO: anything that should happen after assets are reloaded with F5
         }
