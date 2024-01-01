@@ -30,6 +30,9 @@ namespace Celeste.Mod.Verillia.Utils {
             On.Celeste.OverworldLoader.ctor += OverworldLoader_ctor;
 
             // TODO: apply any hooks that should always be active
+
+
+            VerilliaUtilsPlayerExt.MovementModes.Add("Normal", Player.StNormal);
         }
 
         public override void Unload() {

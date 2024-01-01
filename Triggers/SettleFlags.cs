@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Celeste.Mod.Verillia.Utils
 {
-    public class VUKTriggers_SettleFlags
+    public class SettleFlagsTrigger
     {
     }
 }
