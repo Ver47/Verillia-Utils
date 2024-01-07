@@ -26,7 +26,8 @@ namespace Celeste.Mod.Verillia.Utils.Entities
         const double IntervalStep = 1;
         const float Precision = 0.0001f;
         const int MinPoints = 8;
-        const int PointDistance = 8;
+        const int PointDistance = 16;
+        const float DiversionDistance = 4;
 
         public int xStart, xEnd;
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using Microsoft.Xna.Framework;
 using MonoMod.ModInterop;
 
@@ -28,16 +29,15 @@ namespace Celeste.Mod.Verillia.Utils {
 
             On.Celeste.LevelLoader.ctor += LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor += OverworldLoader_ctor;
-
-            // TODO: apply any hooks that should always be active
-
-
-            VerilliaUtilsPlayerExt.MovementModes.Add("Normal", Player.StNormal);
+            On.Celeste.Player.ctor += Player_ctor;
+            Everest.Events.Player.OnRegisterStates += Player_addStates;
         }
 
         public override void Unload() {
             On.Celeste.LevelLoader.ctor -= LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor -= OverworldLoader_ctor;
+            On.Celeste.Player.ctor -= Player_ctor;
+            Everest.Events.Player.OnRegisterStates -= Player_addStates;
 
             // TODO: unapply any hooks applied in Load()
         }
@@ -64,6 +64,19 @@ namespace Celeste.Mod.Verillia.Utils {
         private void LevelLoader_ctor(On.Celeste.LevelLoader.orig_ctor orig, LevelLoader self, Session session, Vector2? startposition) {
             orig(self, session, startposition);
             LoadBeforeLevel();
+        }
+
+        private void Player_ctor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 pos, PlayerSpriteMode spriteMode)
+        {
+            orig(self, pos, spriteMode);
+            self.Add(new VerilliaUtilsPlayerExt());
+        }
+
+        private void Player_addStates(Player player)
+        {
+            VerilliaUtilsPlayerExt extension = player.Components.Get<VerilliaUtilsPlayerExt>();
+            extension.MovementModes.Add("Normal", Player.StNormal);
+            VerilliaUtilsPlayerExt.RailBoostState = player.AddState("RailBoost", extension.RailBoost, extension.RailBoostCoroutine);
         }
     }
 }
