@@ -9,7 +9,7 @@ using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace Celeste.Mod.Verillia.Utils
+namespace Celeste.Mod.Verillia.Utils.Triggers
 {
     [CustomEntity("Verillia/Utils/FlagSettlingStateTrigger")]
     public class FlagSettlingStateTrigger : Trigger

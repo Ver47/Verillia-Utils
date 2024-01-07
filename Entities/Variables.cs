@@ -9,7 +9,7 @@ using Celeste.Mod;
 using Microsoft.Xna.Framework;
 using Celeste.Mod.Entities;
 
-namespace Celeste.Mod.Verillia.Utils
+namespace Celeste.Mod.Verillia.Utils.Entities
 {
 
     [CustomEntity(

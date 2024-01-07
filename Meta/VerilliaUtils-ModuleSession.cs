@@ -10,6 +10,19 @@ namespace Celeste.Mod.Verillia.Utils {
         public Dictionary<string, int> SettledInts;
         public Dictionary<string, float> SettledFloats;
 
+        //Variable Flaglikes
+        public Dictionary<string, int> Ints;
+        public Dictionary<string, float> Floats;
+
+        //TimeStates
+        public enum TimeState
+        {
+            Play = 1,
+            Pause = 0,
+            Rewind = -1
+        }
+        public Dictionary<string, TimeState> TimeStates;
+
         public void SettleFlags(Session session)
         {
             foreach(KeyValuePair<string, bool> i in SettledFlags)
@@ -44,10 +57,6 @@ namespace Celeste.Mod.Verillia.Utils {
             SettleInts();
             SettleFloats();
         }
-
-        //Variable Flaglikes
-        public Dictionary<string, int> Ints;
-        public Dictionary<string, float> Floats;
 
 
     }

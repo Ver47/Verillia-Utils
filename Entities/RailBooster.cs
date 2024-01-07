@@ -7,10 +7,27 @@ using Celeste.Mod;
 using Celeste;
 using Monocle;
 using Celeste.Mod.Entities;
+using Microsoft.Xna.Framework;
 
-namespace Celeste.Mod.Verillia.Utils {
-    [CustomEntity()]
+namespace Celeste.Mod.Verillia.Utils.Entities {
+    [Tracked]
+    [CustomEntity("Verillia/Utils/RailBooster/Node")]
     public class RailBooster
     {
+        public bool Entry = true;
+        public List<RailRope> Rails;
+        public void AddRail(RailRope rail)
+        {
+            int amount =  Rails.Count();
+            if (amount > 1)
+            {
+                Rails.Add(rail);
+                return;
+            }
+            for(int index = 1; index < amount; index++)
+            {
+
+            }
+        }
     }
 }
