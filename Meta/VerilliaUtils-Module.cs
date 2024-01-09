@@ -20,7 +20,7 @@ namespace Celeste.Mod.Verillia.Utils {
             Logger.SetLogLevel(nameof(VerilliaUtilsModule), LogLevel.Verbose);
 #else
             // release builds use info logging to reduce spam in log files
-            Logger.SetLogLevel(nameof(Verillia_UtilsModule), LogLevel.Info);
+            Logger.SetLogLevel(nameof(VerilliaUtilsModule), LogLevel.Info);
 #endif
         }
 
@@ -68,15 +68,18 @@ namespace Celeste.Mod.Verillia.Utils {
 
         private void Player_ctor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 pos, PlayerSpriteMode spriteMode)
         {
-            orig(self, pos, spriteMode);
             self.Add(new VerilliaUtilsPlayerExt());
+            orig(self, pos, spriteMode);
         }
 
         private void Player_addStates(Player player)
         {
             VerilliaUtilsPlayerExt extension = player.Components.Get<VerilliaUtilsPlayerExt>();
-            extension.MovementModes.Add("Normal", Player.StNormal);
-            VerilliaUtilsPlayerExt.RailBoostState = player.AddState("RailBoost", extension.RailBoost, extension.RailBoostCoroutine);
+            player.Components.Get<VerilliaUtilsPlayerExt>().RailBoostState = player.AddState(
+                "VUK-RailBoost",
+                extension.RailBoostUpdate,
+                extension.RailBoostCoroutine,
+                extension.GenericStartState);
         }
     }
 }
