@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
-        <AssemblyName>Verillia_Utils</AssemblyName>
+        <AssemblyName>Verillia-Utils</AssemblyName>
         <RootNamespace>Celeste.Mod.Verillia.Utils</RootNamespace>
         <LangVersion>latest</LangVersion>
         <CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('..\..\Celeste.dll')">..\..</CelestePrefix>
@@ -19,19 +19,16 @@
     <ItemGroup>
         <PackageReference Include="CelesteAnalyzer" Version="1.0.3.1" />
         <PackageReference Include="MonoMod.RuntimeDetour" Version="22.01.04.03" PrivateAssets="all" ExcludeAssets="runtime" />
+		<PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1" PrivateAssets="all" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Reference Include="$(CelestePrefix)\FNA.dll">
-            <Private>false</Private>
-        </Reference>
-        <Reference Include="Celeste">
-          <HintPath>..\..\Celeste.dll</HintPath>
-        </Reference>
-        <Reference Include="MMHOOK_Celeste">
-          <HintPath>..\..\MMHOOK_Celeste.dll</HintPath>
-        </Reference>
-    </ItemGroup>
+	<ItemGroup>
+		<Reference Include="$(CelestePrefix)\Celeste.dll" Publicize="true">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="$(CelestePrefix)\MMHOOK_Celeste.dll" Private="false" />
+		<Reference Include="$(CelestePrefix)\FNA.dll" Private="false" />
+	</ItemGroup>
 
     <Target Name="CopyFiles" AfterTargets="Build">
         <Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFolder="bin" />
@@ -39,7 +36,7 @@
     </Target>
     
     <PropertyGroup>
-        <PathMap>$(MSBuildProjectDirectory)=Verillia_Utils/</PathMap>
+        <PathMap>$(MSBuildProjectDirectory)=VerUtils/</PathMap>
     </PropertyGroup>
 
 </Project>

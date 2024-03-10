@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Celeste;
 
 namespace Celeste.Mod.Verillia.Utils {
-    public class VerilliaUtilsModuleSession : EverestModuleSession {
+    public class VerilliaUtilsSession : EverestModuleSession {
 
         //Settled Variables
         public Dictionary<string, bool> SettledFlags;
@@ -22,6 +22,9 @@ namespace Celeste.Mod.Verillia.Utils {
             Rewind = -1
         }
         public Dictionary<string, TimeState> TimeStates;
+
+        //EventCalls
+        public Dictionary<string, HashSet<Action>> Events;
 
         public void SettleFlags(Session session)
         {
