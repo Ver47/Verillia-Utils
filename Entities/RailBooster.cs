@@ -54,14 +54,14 @@ namespace Celeste.Mod.Verillia.Utils.Entities {
 
         public void OnPlayer(Player player)
         {
-            if (player.StateMachine.State ==
-                player.GetVerUtilsExt().StRailBoost
-                || ReentryTimer > 0
+            if (player.StateMachine.State == player.GetVerUtilsExt().StRailBoost
                 || !IsEntry)
             {
-                ReentryTimer = ReentryTime;
+                ReentryTimer = ReentryTime + getTimeLimit();
                 return;
             }
+            if (ReentryTimer > 0)
+                return;
             Logger.Log(LogLevel.Verbose, "VerUtils/RailBooster-Node",
                 "Railboosted");
             player.StateMachine.State = 

@@ -228,6 +228,8 @@ namespace Celeste.Mod.Verillia.Utils
                     player.launched = true;
                     Logger.Log(LogLevel.Verbose, "VerUtils/PlayerExtension",
                         $"Launched at speed {player.Speed}");
+                    // Set the timer as so.
+                    Node.ReentryTimer = RailBooster.ReentryTime;
                     yield break;
                 }
                 justEntered = false;
@@ -278,6 +280,8 @@ namespace Celeste.Mod.Verillia.Utils
                     // Go to the default if autodecided
                     RailIndex = Node.getDefault(RailIndex);
                 }
+                // Set the timer as so.
+                Node.ReentryTimer = RailBooster.ReentryTime;
                 Logger.Log(LogLevel.Verbose, "VerUtils/PlayerExtension",
                     $"Travelling through rail #{RailIndex}");
                 RailRope Rail = Node.Rails[RailIndex];
