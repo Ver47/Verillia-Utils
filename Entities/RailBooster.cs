@@ -101,21 +101,25 @@ namespace Celeste.Mod.Verillia.Utils.Entities {
                 0 : BaseTime + ((Rails.Count - 1) * RailTime);
         }
 
-        public int CycleY(int index, bool down)
-        {
-            // Return new index from inputted direction
-            return index;
-        }
-
-        public int CycleX(int index, bool right)
-        {
-            // Return new index from inputted direction
-            return index;
-        }
-
         public int getClosestToDirection(Vector2 direction)
         {
-            return 0;
+            Vector2 dir = direction;
+            dir.Normalize();
+            Vector2 best = Vector2.Zero;
+            int bestindex = -1;
+            for (int index = 0; index < Rails.Count; index++)
+            {
+                RailRope rail = Rails[index];
+                SimpleCurve curve = rail.getPathFrom(Position);
+                Vector2 contender = curve.Control - curve.Begin;
+                contender.SafeNormalize();
+                if((dir - contender).LengthSquared() < (dir - best).LengthSquared())
+                {
+                    best = contender;
+                    bestindex = index;
+                }
+            }
+            return bestindex;
         }
 
         public int getDefault(int index)

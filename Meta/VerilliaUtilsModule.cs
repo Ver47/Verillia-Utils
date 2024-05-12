@@ -41,6 +41,9 @@ namespace Celeste.Mod.Verillia.Utils {
 
             //Player methods.
             On.Celeste.Player.Die += Player_die;
+
+            //Custom Event Conditions
+            EventFirer.Hooks.Init();
         }
 
         public override void Unload()
@@ -59,6 +62,9 @@ namespace Celeste.Mod.Verillia.Utils {
 
             //Player methods.
             On.Celeste.Player.Die -= Player_die;
+
+            //Custom Event Conditions
+            EventFirer.Hooks.DeInit();
         }
 
         public void LoadBeforeLevel() {

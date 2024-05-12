@@ -23,6 +23,10 @@ namespace Celeste.Mod.Verillia.Utils
         }
         public bool Aerodynamic = false;
 
+        //Event Firing
+        private bool WasOnGround;
+        private Facings WasFacing;
+
         private Player player => EntityAs<Player>();
 
         internal VerilliaUtilsPlayerExt(bool active = true, bool visible = true)
@@ -39,13 +43,15 @@ namespace Celeste.Mod.Verillia.Utils
         {
             Logger.Log(LogLevel.Warn, "VerUtils/PlayerExtension",
                 "Verillia Utils Player Extension has been removed. " +
-                "Removing this may pose some risks. Be wary.");
+                "Removing this may pose some risks to functionality. Be wary.");
             base.Removed(entity);
         }
 
         public override void EntityAwake()
         {
             base.EntityAwake();
+            WasOnGround = player.onGround;
+            WasFacing = 0;
         }
 
         public override void EntityRemoved(Scene scene)
@@ -73,7 +79,27 @@ namespace Celeste.Mod.Verillia.Utils
 
         public void PostUpdate()
         {
-
+            if (WasOnGround != player.onGround)
+                if (WasOnGround)
+                    Scene.FireCustomVerUtilsEventsFromCondition(EventFirer.Condition.OnAirborn);
+                else
+                    Scene.FireCustomVerUtilsEventsFromCondition(EventFirer.Condition.OnLand);
+            WasOnGround = player.onGround;
+            if (WasFacing != player.Facing)
+            {
+                switch (player.Facing)
+                {
+                    case Facings.Left:
+                        Scene.FireCustomVerUtilsEventsFromCondition(EventFirer.Condition.OnFacingLeft);
+                        break;
+                    case Facings.Right:
+                        Scene.FireCustomVerUtilsEventsFromCondition(EventFirer.Condition.OnFacingRight);
+                        break;
+                }
+                if (WasFacing != 0)
+                    Scene.FireCustomVerUtilsEventsFromCondition(EventFirer.Condition.OnTurn);
+            }
+            WasFacing = player.Facing;
         }
         #endregion
         #endregion
@@ -238,27 +264,9 @@ namespace Celeste.Mod.Verillia.Utils
                         BoosterAim = Input.Aim.Value == Vector2.Zero ?
                             Vector2.Zero :
                             Input.GetAimVector(Heading);
-                        //Only cycles when Jump is held
-                        if (Input.Jump.Check) {
-                            // for fine tuning by keyboard players, do cycle logic
-                            int LastIndex = RailIndex;
-                            if (Math.Sign(BoosterAim.X) != LastX && Math.Sign(BoosterAim.X) != 0)
-                            {
-                                RailIndex = Node.CycleX(RailIndex, Math.Sign(BoosterAim.X) > 0);
-                                if (RailIndex == EntryIndex)
-                                    RailIndex = Node.CycleX(RailIndex, Math.Sign(BoosterAim.X) > 0);
-                            }
-                            if (Math.Sign(BoosterAim.Y) != LastY && Math.Sign(BoosterAim.Y) != 0
-                                && LastIndex != RailIndex)
-                            {
-                                Node.CycleY(RailIndex, Math.Sign(BoosterAim.Y) > 0);
-                                if (RailIndex == EntryIndex)
-                                    RailIndex = Node.CycleY(RailIndex, Math.Sign(BoosterAim.Y) > 0);
-                            }
-                        }
                         //On Default
                         //Aim the desired path based on Input.Aim
-                        else if (Input.Aim.Value != Vector2.Zero)
+                        if (Input.Aim.Value != Vector2.Zero)
                         {
                             BoosterAim = Input.Aim.Value;
                             BoosterAim.Normalize();
@@ -285,26 +293,29 @@ namespace Celeste.Mod.Verillia.Utils
                 Invincible = Rail.InvincibleOnTravel;
                 // bunch of movement logic for rails
                 SimpleCurve RailBoosterPath = Rail.getPathFrom(Node.Position);
-                float PathLength =
-                    RailBoosterPath.GetLengthParametric(Rail.PointCount);
                 Logger.Log(LogLevel.Verbose, "VerUtils/PlayerExtension",
                     $"Rail details: {RailBoosterPath}");
-                float AmountTravelled = 0f;
+
+                //Distance travelled gets decided (setup)
+                float dist = RailBoosterTravelSpeed * Engine.DeltaTime;
                 // Move through the rail
-                while (AmountTravelled < 1f)
+                for (int pointindex = 0; pointindex <= Rail.PointCount; pointindex++)
                 {
-                    //Player Position gets set
-                    player.NaiveMove
-                    (
-                        Rail.giveWobbleTo(RailBoosterPath)
-                        .GetPoint(AmountTravelled) - player.Collider.Center
-                        - player.ExactPosition
-                    );
-                    //Move to next point.
-                    AmountTravelled +=
-                        (RailBoosterTravelSpeed * Engine.DeltaTime) / PathLength;
-                    //goto next frame
-                    yield return null;
+                    //Point for reference
+                    Vector2 goal = RailBoosterPath.GetPoint(pointindex/Rail.PointCount);
+                    while (player.ExactPosition != goal) {
+
+                        //Player Position gets set
+                        Vector2 endpoint = Calc.Approach(player.ExactPosition, goal, dist);
+                        dist -= (player.ExactPosition - endpoint).Length();
+                    player.NaiveMove(endpoint - player.ExactPosition);
+                        //goto next frame if needed distance is travelled
+                        if (dist <= 0) {
+                            yield return null;
+                            //next distance gets decided
+                            dist = RailBoosterTravelSpeed * Engine.DeltaTime;
+                        }
+                    }
                 }
                 //Put the player at the end of the rail.
                 player.NaiveMove

@@ -38,7 +38,7 @@ namespace Celeste.Mod.Verillia.Utils
         #region Scene
         private static Queue<string> EventCallBuffer = new Queue<string>();
         private static bool CallingEvents = false;
-        public static void FireVerUtilsEvent(this Scene scene, string EventName)
+        public static void FireCustomVerUtilsEvent(this Scene scene, string EventName)
         {
             EventCallBuffer.Enqueue(EventName);
             if (CallingEvents)
@@ -74,7 +74,7 @@ namespace Celeste.Mod.Verillia.Utils
             CallingEvents = false;
         }
 
-        public static void FireEventsFromCondition(this Scene scene, EventFirer.Condition condition, bool immediately = false)
+        public static void FireCustomVerUtilsEventsFromCondition(this Scene scene, EventFirer.Condition condition, bool immediately = false)
         {
             foreach (
                 EventFirer firer
@@ -84,6 +84,7 @@ namespace Celeste.Mod.Verillia.Utils
                 firer.FireEvent(immediately);
             }
         }
+
         public static T PseudoTrackNearestTo<T>(this Scene scene, Vector2 position) where T : Entity
         {
             var list = scene.Tracker.GetEntities<T>();
@@ -129,6 +130,7 @@ namespace Celeste.Mod.Verillia.Utils
             //Player is at depth 0 btw
 
             //BACK===================================
+            public const int LastUpdate = int.MaxValue; //Makes it so that it updates last.
             // - BGTerrain: BG Tiles = 10,000
             // - BGMirrors: Reflective BG Mirrors = 9,500
             // - BGDecals: BG Decals = 9,000
@@ -162,6 +164,7 @@ namespace Celeste.Mod.Verillia.Utils
             public const int Reticle = -1_950_000;
             // - Top: Pseudo UI (Dash Assist and Grab Toggle) = -1,000,000
             // - FormationSequences: Heart Collection and Bubble Return = -2,000,000
+            public const int FirstUpdate = int.MinValue; //Makes it so that it updates first
             //FRONT==================================
         }
 
