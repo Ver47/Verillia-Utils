@@ -250,10 +250,7 @@ namespace Celeste.Mod.Verillia.Utils
                     BoosterAim = Input.Aim.Value == Vector2.Zero ?
                         Vector2.Zero :
                         Input.GetAimVector(Heading);
-                    int LastX = Math.Sign(BoosterAim.X);
-                    int LastY = Math.Sign(BoosterAim.Y);
                     //Player gets limited decision time before they continue
-                    //Time decided is based on the amount of paths
                     //(Unless the booster is instant)
                     Timer = Node.getTimeLimit();
                     while (Timer > 0)
@@ -266,17 +263,12 @@ namespace Celeste.Mod.Verillia.Utils
                             Input.GetAimVector(Heading);
                         //On Default
                         //Aim the desired path based on Input.Aim
-                        if (Input.Aim.Value != Vector2.Zero)
+                        if (BoosterAim != Vector2.Zero)
                         {
-                            BoosterAim = Input.Aim.Value;
-                            BoosterAim.Normalize();
                             NewIndex = Node.getClosestToDirection(BoosterAim);
                             if (NewIndex != EntryIndex)
                                 RailIndex = NewIndex;
                         }
-                        //More cycle logic
-                        LastX = Math.Sign(BoosterAim.X);
-                        LastY = Math.Sign(BoosterAim.Y);
                         yield return null;
                         Timer -= Engine.DeltaTime;
                     }

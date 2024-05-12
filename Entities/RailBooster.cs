@@ -98,7 +98,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities {
         public float getTimeLimit()
         {
             return InstantChoice?
-                0 : BaseTime + ((Rails.Count - 1) * RailTime);
+                0 : BaseTime + (Math.Min((Rails.Count - 1), 12) * RailTime);
         }
 
         public int getClosestToDirection(Vector2 direction)
