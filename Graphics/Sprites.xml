@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Sprites>
+  <VerUtils-railbooster path="objects/VerUtils/Railbooster/" start="loop">
+    <Justify x="0.5" y="0.5"/>
+    <Loop id="loop" path="node" delay="0.1" frames="0-4"/>
+    <Loop id="inside" path="node" delay="0.1" frames="5-8"/>
+    <Loop id="spin" path="node" delay="0.06" frames="18-25"/>
+    <Anim id="pop" path="node" delay="0.08" frames="9-17"/>
+    <Anim id="shrink" path="node" delay="0.05" frames="26-29" goto="small"/>
+    <Loop id="small" path="node" delay="1" frames="29"/>
+    <Anim id="grow" path="node" delay="0.05" frames="29-26" goto="loop"/>
+  </VerUtils-railbooster>
+</Sprites>

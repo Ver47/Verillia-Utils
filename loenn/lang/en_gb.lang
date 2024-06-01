@@ -1,0 +1,32 @@
+#Meta
+mods.VerUtils.name=Verillia's Utility Kit
+
+
+
+# Rail Booster Rope
+entities.VerUtils/RailBooster-Rail.placements.name.normal=Rail Booster Rope
+
+
+entities.VerUtils/RailBooster-Rail.attributes.name.slough=Slough
+entities.VerUtils/RailBooster-Rail.attributes.description.slough=How far the rope drops between the nodes. Cannot be negative.
+
+entities.VerUtils/RailBooster-Rail.attributes.name.invincible=Invincible
+entities.VerUtils/RailBooster-Rail.attributes.description.invincible=If the player cannot die whilst in the rope.
+
+entities.VerUtils/RailBooster-Rail.attributes.name.priority=Priority
+entities.VerUtils/RailBooster-Rail.attributes.description.priority=In forks, the highest priority ropes will be the only options available.
+
+entities.VerUtils/RailBooster-Rail.attributes.name.bg=Background
+entities.VerUtils/RailBooster-Rail.attributes.description.bg=If the rope will show just behind the player or not; will still show in front of most other background entities.
+
+
+
+#Rail Booster Node
+entities.VerUtils/RailBooster-Node.placements.name.normal=Rail Booster Node
+entities.VerUtils/RailBooster-Node.placements.name.instantFork=Rail Booster Instant Fork
+
+entities.VerUtils/RailBooster-Node.attributes.name.instant=Instant Choice
+entities.VerUtils/RailBooster-Rope.attributes.description.instant=On the case of a fork, whether or not the player immediately chooses an option.
+
+entities.VerUtils/RailBooster-Node.attributes.name.isEntry=Entrance
+entities.VerUtils/RailBooster-Rope.attributes.description.isEntry=If the player can use this as an entrance to a rail booster network. Pretty useless beyond instant choice forks as the ropes already set them.

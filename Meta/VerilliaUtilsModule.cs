@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using Celeste.Mod.Verillia.Utils.Entities;
 using Microsoft.Xna.Framework;
 using MonoMod.ModInterop;
 
@@ -19,7 +20,7 @@ namespace Celeste.Mod.Verillia.Utils {
             Instance = this;
 #if DEBUG
             // debug builds use verbose logging
-            Logger.SetLogLevel(ModName, LogLevel.Verbose);
+            Logger.SetLogLevel(ModName, LogLevel.Debug);
 #else
             // release builds use info logging to reduce spam in log files
             Logger.SetLogLevel(ModName, LogLevel.Info);
@@ -41,6 +42,7 @@ namespace Celeste.Mod.Verillia.Utils {
 
             //Player methods.
             On.Celeste.Player.Die += Player_die;
+            On.Celeste.PlayerCollider.Check += PlayerCollider_Check;
 
             //Custom Event Conditions
             EventFirer.Hooks.Init();
@@ -62,6 +64,7 @@ namespace Celeste.Mod.Verillia.Utils {
 
             //Player methods.
             On.Celeste.Player.Die -= Player_die;
+            On.Celeste.PlayerCollider.Check -= PlayerCollider_Check;
 
             //Custom Event Conditions
             EventFirer.Hooks.DeInit();
@@ -109,6 +112,13 @@ namespace Celeste.Mod.Verillia.Utils {
             {
                 return null;
             }
+            Logger.Log(LogLevel.Debug, "VerUtils/Module",
+                $"Died with speed {self.Speed}");
+            Logger.Log(LogLevel.Debug, "VerUtils/Module",
+                $"ManualMovement: {self.GetVerUtilsExt().manualMovement}");
+            Logger.Log(LogLevel.Debug, "VerUtils/Module",
+                $"Velocity: {self.GetVerUtilsExt().Velocity}");
+            self.GetVerUtilsExt().playerRailBooster?.Burst();
             return orig(self, direction, evenIfInvincible, registerDeathInStats);
         }
 
@@ -137,6 +147,15 @@ namespace Celeste.Mod.Verillia.Utils {
             ext.RenderBelow();
             orig(self);
             ext.RenderAbove();
+        }
+
+        private bool PlayerCollider_Check(On.Celeste.PlayerCollider.orig_Check orig, PlayerCollider self, Player player)
+        {
+            var ext = player.Components.Get<VerilliaUtilsPlayerExt>();
+            ext?.SetSpeed(false);
+            var ret = orig(self, player);
+            ext?.SetSpeed(true);
+            return ret;
         }
     }
 }

@@ -61,7 +61,7 @@ namespace Celeste.Mod.Verillia.Utils
                 {
                     if (listener.Name != CurrentEventRun)
                         continue;
-                    Logger.Log(LogLevel.Verbose, "VerUtils",
+                    Logger.Log(LogLevel.Debug, "VerUtils",
                         $"Running event function for an entity of " +
                         $"type \"{listener.Entity.GetType()}\" " +
                         $"with position {listener.Entity.Position}");
@@ -117,6 +117,16 @@ namespace Celeste.Mod.Verillia.Utils
             }
             return ret;
         }
+
+        public static int WithTags(this int self, params BitTag[] tags)
+        {
+            int ret = self;
+            foreach (BitTag tag in tags)
+            {
+                ret = ret.WithTag(tag);
+            }
+            return ret;
+        }
         #endregion
 
         #endregion
@@ -130,7 +140,7 @@ namespace Celeste.Mod.Verillia.Utils
             //Player is at depth 0 btw
 
             //BACK===================================
-            public const int LastUpdate = int.MaxValue; //Makes it so that it updates last.
+            public const int FirstUpdate = int.MaxValue; //Makes it so that it updates last.
             // - BGTerrain: BG Tiles = 10,000
             // - BGMirrors: Reflective BG Mirrors = 9,500
             // - BGDecals: BG Decals = 9,000
@@ -139,10 +149,10 @@ namespace Celeste.Mod.Verillia.Utils
             // - Below: Generic BG Entities = 2,000
             // - NPCs: Characters (People) = 1,000
             // - TheoCrystal: Theo (in Crystal) = 100
+            public const int RailBooster_Rail_BG = 10;
             //PLAYER = 0  =====================================
             // - Dust: Dust Bunnies? = -50
             // - Pickups: Jellyfish? = -100
-            public const int RailBooster_Rail_BG = -150;
             // - Seeker: Seekers = -200
             // - Particles: FG Particles = -8,000
             // - Above: Generic FG Entities = -8,500
@@ -164,7 +174,7 @@ namespace Celeste.Mod.Verillia.Utils
             public const int Reticle = -1_950_000;
             // - Top: Pseudo UI (Dash Assist and Grab Toggle) = -1,000,000
             // - FormationSequences: Heart Collection and Bubble Return = -2,000,000
-            public const int FirstUpdate = int.MinValue; //Makes it so that it updates first
+            public const int LastUpdate = int.MinValue; //Makes it so that it updates first
             //FRONT==================================
         }
 
