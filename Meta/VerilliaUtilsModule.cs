@@ -1,22 +1,27 @@
 ﻿using System;
 using System.Collections;
+using System.Reflection;
 using Celeste.Mod.Verillia.Utils.Entities;
 using Microsoft.Xna.Framework;
 using MonoMod.ModInterop;
+using MonoMod.RuntimeDetour;
 
-namespace Celeste.Mod.Verillia.Utils {
-    public class VerilliaUtilsModule : EverestModule {
+namespace Celeste.Mod.Verillia.Utils
+{
+    public class VerilliaUtilsModule : EverestModule
+    {
         public const string ModName = "VerUtils";
 
         public static VerilliaUtilsModule Instance { get; private set; }
 
         public override Type SettingsType => typeof(VerilliaUtilsSettings);
-        public static VerilliaUtilsSettings Settings => (VerilliaUtilsSettings) Instance._Settings;
+        public static VerilliaUtilsSettings Settings => (VerilliaUtilsSettings)Instance._Settings;
 
         public override Type SessionType => typeof(VerilliaUtilsSession);
-        public static VerilliaUtilsSession Session => (VerilliaUtilsSession) Instance._Session;
+        public static VerilliaUtilsSession Session => (VerilliaUtilsSession)Instance._Session;
 
-        public VerilliaUtilsModule() {
+        public VerilliaUtilsModule()
+        {
             Instance = this;
 #if DEBUG
             // debug builds use verbose logging
@@ -27,7 +32,8 @@ namespace Celeste.Mod.Verillia.Utils {
 #endif
         }
 
-        public override void Load() {
+        public override void Load()
+        {
             //Template stuff
             On.Celeste.LevelLoader.ctor += LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor += OverworldLoader_ctor;
@@ -43,6 +49,9 @@ namespace Celeste.Mod.Verillia.Utils {
             //Player methods.
             On.Celeste.Player.Die += Player_die;
             On.Celeste.PlayerCollider.Check += PlayerCollider_Check;
+
+            //Actor methods
+            ActorLiftBoostHook = new Hook(typeof(Actor).GetProperty("LiftSpeed", BindingFlags.Instance | BindingFlags.Public).GetGetMethod(), getLiftBoost);
 
             //Custom Event Conditions
             EventFirer.Hooks.Init();
@@ -66,34 +75,45 @@ namespace Celeste.Mod.Verillia.Utils {
             On.Celeste.Player.Die -= Player_die;
             On.Celeste.PlayerCollider.Check -= PlayerCollider_Check;
 
+            //Actor methods
+            ActorLiftBoostHook.Dispose();
+
             //Custom Event Conditions
             EventFirer.Hooks.DeInit();
         }
 
-        public void LoadBeforeLevel() {
-            
+        #region Level Hooks
+        public void LoadBeforeLevel()
+        {
+
 
             // TODO: apply any hooks that should only be active while a level is loaded
         }
 
-        public void UnloadAfterLevel() {
-            
+        public void UnloadAfterLevel()
+        {
+
 
             // TODO: unapply any hooks applied in LoadBeforeLevel()
         }
 
         //What are these? I dunno, but they do things!
-        private void OverworldLoader_ctor(On.Celeste.OverworldLoader.orig_ctor orig, OverworldLoader self, Overworld.StartMode startmode, HiresSnow snow) {
+        private void OverworldLoader_ctor(On.Celeste.OverworldLoader.orig_ctor orig, OverworldLoader self, Overworld.StartMode startmode, HiresSnow snow)
+        {
             orig(self, startmode, snow);
-            if (startmode != (Overworld.StartMode) (-1)) {
+            if (startmode != (Overworld.StartMode)(-1))
+            {
                 UnloadAfterLevel();
             }
         }
-        private void LevelLoader_ctor(On.Celeste.LevelLoader.orig_ctor orig, LevelLoader self, Session session, Vector2? startposition) {
+        private void LevelLoader_ctor(On.Celeste.LevelLoader.orig_ctor orig, LevelLoader self, Session session, Vector2? startposition)
+        {
             orig(self, session, startposition);
             LoadBeforeLevel();
         }
+        #endregion
 
+        #region Player Hooks
         private void Player_ctor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 pos, PlayerSpriteMode spriteMode)
         {
             orig(self, pos, spriteMode);
@@ -112,14 +132,10 @@ namespace Celeste.Mod.Verillia.Utils {
             {
                 return null;
             }
-            Logger.Log(LogLevel.Debug, "VerUtils/Module",
-                $"Died with speed {self.Speed}");
-            Logger.Log(LogLevel.Debug, "VerUtils/Module",
-                $"ManualMovement: {self.GetVerUtilsExt().manualMovement}");
-            Logger.Log(LogLevel.Debug, "VerUtils/Module",
-                $"Velocity: {self.GetVerUtilsExt().Velocity}");
-            self.GetVerUtilsExt().playerRailBooster?.Burst();
-            return orig(self, direction, evenIfInvincible, registerDeathInStats);
+            var deadbody = orig(self, direction, evenIfInvincible, registerDeathInStats);
+            if (deadbody is null)
+                self.GetVerUtilsExt().playerRailBooster?.Burst();
+            return deadbody;
         }
 
         //Player update and render, not using the getext in case somebody wants to remove the component
@@ -157,5 +173,17 @@ namespace Celeste.Mod.Verillia.Utils {
             ext?.SetSpeed(true);
             return ret;
         }
+        #endregion
+
+        #region Actor Hooks
+        Hook ActorLiftBoostHook;
+        private delegate Vector2 orig_get_LiftSpeed(Actor self);
+        private Vector2 getLiftBoost(orig_get_LiftSpeed orig, Actor self)
+        {
+            Vector2 speed = orig(self);
+            // foreach on a list of shifters returning the first highest priority shifter
+            return speed;
+        }
+        #endregion
     }
 }

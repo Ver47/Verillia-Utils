@@ -238,6 +238,7 @@ namespace Celeste.Mod.Verillia.Utils
             {
                 Logger.Log(LogLevel.Debug, "VerUtils/PlayerExtension",
                     $"Railbooster node has {LastRailBooster.Rails.Count} options.");
+                player.RefillDash();
 
                 #region Exit
                 // Immediately end the action on exit

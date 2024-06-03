@@ -57,7 +57,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
         public static readonly Color RopeColor = Calc.HexToColor("a986d3");
         public static readonly Color ShadowColor = Calc.HexToColor("563b85");
         public static readonly Color OutlineColor = Calc.HexToColor("e6c1ec");
-        public const float RopeThickness = 3f;
+        public const float RopeThickness = 2f;
 
         public SimpleCurve Rope { get; private set; }
         public Vector2 CurveMiddle { get; private set; }
@@ -224,7 +224,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                         BaseRope.Begin + (Vector2.UnitX * i) + (Vector2.UnitY * j),
                         BaseRope.End + (Vector2.UnitX * i) + (Vector2.UnitY * j),
                         BaseRope.Control + (Vector2.UnitX * i) + (Vector2.UnitY * j));
-                    RenderRope.Render(
+                    RenderRope.RenderBetter(
                         OutlineColor,
                         PointCount,
                         RopeThickness
@@ -240,7 +240,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                     BaseRope.Begin + (Vector2.UnitY * offset),
                     BaseRope.End + (Vector2.UnitY * offset),
                     BaseRope.Control + (Vector2.UnitY * offset));
-                RenderRope.Render(
+                RenderRope.RenderBetter(
                     Colors[i],
                     PointCount,
                     RopeThickness

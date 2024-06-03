@@ -34,7 +34,7 @@ RailBoosterRope.fieldInformation = {
     }
 }
 RailBoosterRope.nodeLimits = {1, 1}
-RailBoosterRope.nodeVisibility = "always"
+RailBoosterRope.nodeVisibility = "never"
 
 local function Rail(entity, offsetx, offsety, color)
     
@@ -45,7 +45,7 @@ local function Rail(entity, offsetx, offsety, color)
     local control = {(entity.nodes[1].x+entity.x)/2 + offsetx, (entity.nodes[1].y+entity.y)/2 + offsety + drop}
 
     local points = drawing.getSimpleCurve(start, stop, control)
-    local curveSprite = drawableLine.fromPoints(points, color, 3)
+    local curveSprite = drawableLine.fromPoints(points, color, 2)
 
     return curveSprite
 end

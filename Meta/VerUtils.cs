@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using VanillaDepths = Celeste.Depths;
 
 namespace Celeste.Mod.Verillia.Utils
@@ -102,7 +103,7 @@ namespace Celeste.Mod.Verillia.Utils
         }
         #endregion
 
-        #region Misc
+        #region BitTag
         public static int WithTag(this int self, BitTag toAdd, bool On = true)
         {
             return (On ? self | toAdd : self & ~toAdd);
@@ -126,6 +127,40 @@ namespace Celeste.Mod.Verillia.Utils
                 ret = ret.WithTag(tag);
             }
             return ret;
+        }
+        #endregion
+
+        #region SimpleCurve
+        public static void RenderBetter(this SimpleCurve curve, Vector2 offset, Color color, int resolution)
+        {
+            Vector2 start = offset + curve.Begin;
+            for (int i = 1; i <= resolution; i++)
+            {
+                Vector2 vector = offset + curve.GetPoint(Ease.Follow(Ease.QuadOut, Ease.QuadIn)((float)i / resolution));
+                Draw.Line(start, vector, color);
+                start = vector;
+            }
+        }
+
+        public static void RenderBetter(this SimpleCurve curve, Vector2 offset, Color color, int resolution, float thickness)
+        {
+            Vector2 start = offset + curve.Begin;
+            for (int i = 1; i <= resolution; i++)
+            {
+                Vector2 vector = offset + curve.GetPoint(Ease.Follow(Ease.QuadOut, Ease.QuadIn)((float)i / resolution));
+                Draw.Line(start, vector, color, thickness);
+                start = vector;
+            }
+        }
+
+        public static void RenderBetter(this SimpleCurve curve, Color color, int resolution)
+        {
+            curve.RenderBetter(Vector2.Zero, color, resolution);
+        }
+
+        public static void RenderBetter(this SimpleCurve curve, Color color, int resolution, float thickness)
+        {
+            curve.RenderBetter(Vector2.Zero, color, resolution, thickness);
         }
         #endregion
 
