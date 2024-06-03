@@ -50,6 +50,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                 player = pp;
                 Depth = VerUtils.Depths.RailBooster_Node - 1;
                 Tag = Tag.WithTags(Tags.TransitionUpdate, Tags.Persistent);
+                Phase = Phases.Attract;
 
                 Position = position;
 
@@ -79,6 +80,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                 switch (Phase)
                 {
                     case Phases.Attract:
+                        Moving = true;
                         AnimPlayNoReset("loop");
                         MoveTo(Calc.Approach(exactPosition, goal, AttractSpeed * Engine.DeltaTime));
                         if (exactPosition == goal)
@@ -109,10 +111,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                         MoveTo(goal);
                         break;
                     case Phases.Idle:
-                        Moving = false;
-                        AnimPlayNoReset("inside");
                         MoveTo(goal);
-                        sound.Stop();
                         break;
                     case Phases.Burst:
                         Burst();
@@ -120,6 +119,17 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                 }
                 base.Update();
             }
+
+            public void Idle()
+            {
+                if (Moving)
+                    Audio.Play("event:/game/05_mirror_temple/redbooster_enter", Position);
+                Moving = false;
+                AnimPlayNoReset("inside");
+                sound.Stop();
+                Phase = Phases.Idle;
+            }
+
             public void Burst()
             {
                 if (!Bursted)
@@ -129,6 +139,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                 AnimPlayNoReset("pop");
                 Phase = Phases.Burst;
             }
+
             public void OnFinish(string name)
             {
                 if (name == "pop")

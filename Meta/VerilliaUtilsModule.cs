@@ -133,7 +133,7 @@ namespace Celeste.Mod.Verillia.Utils
                 return null;
             }
             var deadbody = orig(self, direction, evenIfInvincible, registerDeathInStats);
-            if (deadbody is null)
+            if (deadbody is not null)
                 self.GetVerUtilsExt().playerRailBooster?.Burst();
             return deadbody;
         }

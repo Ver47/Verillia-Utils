@@ -203,7 +203,6 @@ namespace Celeste.Mod.Verillia.Utils
             playerRailBooster.sprite.Scale.X = (int)player.Facing;
 
             #region Sucking
-            playerRailBooster.Phase = RailBooster.PlayerRailBooster.Phases.Attract;
             float Timer = RailBooster.CenterSuckTime;
             Logger.Log(LogLevel.Debug, "VerUtils/PlayerExtension",
                 $"Going to entry node at {LastRailBooster.Position}");
@@ -293,7 +292,7 @@ namespace Celeste.Mod.Verillia.Utils
                 }
                 #endregion
 
-                playerRailBooster.Phase = RailBooster.PlayerRailBooster.Phases.Idle;
+                playerRailBooster.Idle();
                 justEntered = false;
                 Celeste.Freeze(0.05f);
                 yield return null;
