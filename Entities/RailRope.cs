@@ -34,10 +34,10 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             private set { }
         }
         public int PointCount { get; private set; }
-        private int slough;
 
         //Determines if the player's invincible when travelling through.
         public readonly bool InvincibleOnTravel = true;
+        public bool Background { get; private set; }
 
         // rope setup details
         const int LengthCheckBaseRes = 16;
@@ -59,8 +59,19 @@ namespace Celeste.Mod.Verillia.Utils.Entities
         public static readonly Color OutlineColor = Calc.HexToColor("e6c1ec");
         public const float RopeThickness = 2f;
 
+        //Rope details
         public SimpleCurve Rope { get; private set; }
-        public Vector2 CurveMiddle { get; private set; }
+        public Vector2 CurveControl { get; private set; }
+
+        //Rope shine
+        private const int shineRadius = 3;
+        private const int shinefadeRadius = 10;
+        private const float minShineLength = 5f;
+        private const float maxShineLength = 7f;
+        private SineWave shineposition;
+        private SineWave shineAlpha;
+        private VertexLight shine;
+        private BloomPoint shinebloom;
 
         public RailRope(EntityData data, Vector2 offset) : base(data.Position + offset)
         {
@@ -69,7 +80,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
 
             //Meta stuff
             Vector2 position = data.Position + offset;
-            bool Background = data.Bool("bg", false);
+            Background = data.Bool("bg", false);
             InvincibleOnTravel = data.Bool("invincible", true);
             Depth = Background ?
                 VerUtils.Depths.RailBooster_Rail_BG :
@@ -77,7 +88,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             Priority = data.Int("priority", 0);
             Position = position;
 
-            slough = data.Int("slough", 0);
+            var slough = data.Int("slough", 0);
 
             //Set up the catenary
             Logger.Log(LogLevel.Debug, "VerUtils/RailBooster-Rope",
@@ -91,11 +102,12 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             Logger.Log(LogLevel.Debug, "VerUtils/RailBooster-Rope",
                 $"Left point is at: {p0}");
 
-            CurveMiddle = ((p0 + p1) / 2) + (Vector2.UnitY * data.Int("slough", 0));
+            CurveControl = ((p0 + p1) / 2) + (Vector2.UnitY * slough);
             Logger.Log(LogLevel.Debug, "VerUtils/RailBooster-Rope",
-                $"Middle control point is at: {CurveMiddle}");
+                $"Middle control point is at: {CurveControl}");
 
-            Rope = new SimpleCurve(p0, p1, CurveMiddle);
+            Rope = new SimpleCurve(p0, p1, CurveControl);
+            Position = p0;
 
             PointCount = LengthCheckBaseRes;
             float length = Rope.GetLengthParametric(PointCount);
@@ -117,11 +129,19 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                 $"Wobbling at {WobbleFrequency}Hz");
             Add(Wobble = new SineWave(WobbleFrequency));
             Wobble.Randomize();
-            Calc.PopRandom();
             TransitionListener trans = new TransitionListener();
             trans.OnInBegin = WobbleSync;
             Add(trans);
 
+            //Add the shine
+            Add(shine = new VertexLight(Color.White, 0, shineRadius, shinefadeRadius));
+            Add(shineAlpha = new SineWave(1 / Calc.Random.Range(minShineLength, maxShineLength), Calc.Random.NextSingle()));
+            shineAlpha.OnUpdate = UpdateShineAlpha;
+            Add(shineposition = new SineWave(1 / Calc.Random.Range(minShineLength, maxShineLength), Calc.Random.NextSingle()));
+            shineposition.OnUpdate = UpdateShinePos;
+            Add(shinebloom = new BloomPoint(1, (shineRadius + shinefadeRadius) / 2));
+
+            Calc.PopRandom();
             Add(new MirrorReflection());
         }
 
@@ -201,12 +221,12 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             return new SimpleCurve(Rope.End, Rope.Begin, Rope.Control);
         }
 
-        public SimpleCurve giveWobbleTo(SimpleCurve curve)
+        public SimpleCurve RopeWithWobble()
         {
-            return curve with
+            return Rope with
             {
                 Control =
-                    CurveMiddle
+                    CurveControl
                     + (Vector2.UnitY * ((Wobble.Value + 1) * (WobbleOffset / 2)))
             };
         }
@@ -214,7 +234,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
         public override void Render()
         {
             base.Render();
-            var BaseRope = giveWobbleTo(Rope);
+            var BaseRope = RopeWithWobble();
             //details
             for (int i = -1; i < 2; i += 2)
             {
@@ -250,10 +270,23 @@ namespace Celeste.Mod.Verillia.Utils.Entities
 
         public override void Update()
         {
+            Position = Rope.Begin;
             base.Update();
         }
 
-        static public float getWobbleStrength(float f) =>
-            (float)Math.Sin(f * Math.PI);
+        private void UpdateShineAlpha(float sine)
+        {
+            shine.Alpha = 1-Math.Abs(sine);
+            if (!Background)
+                shine.InSolidAlphaMultiplier = 1;
+            shinebloom.Alpha = shine.Alpha * shine.InSolidAlphaMultiplier;
+        }
+        private void UpdateShinePos(float sine)
+        {
+            shine.Position = RopeWithWobble().GetPoint((sine + 1) / 2) + Vector2.UnitY - Position;
+            if (!Background)
+                shine.LastNonSolidPosition = Position + shine.Position;
+            shinebloom.Position = shine.LastNonSolidPosition - Position;
+        }
     }
 }

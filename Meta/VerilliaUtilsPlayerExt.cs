@@ -150,14 +150,19 @@ namespace Celeste.Mod.Verillia.Utils
 
         #region Railboost
         public const float RailBoosterTravelSpeed = 180f;
-        public const float RailBoosterSpitSpeed = 200f;
+        public const float RailBoosterSpitSpeed = 180f;
 
-        public const float RailBoosterSpitVBoost = -90f;
-        public const float RailBoosterVBoostTimer = 0.1f;
-        public const float RailBoosterVBoostReq = 120f; //30f should be less than the normal fall speed
+        public const float RailBoosterSpitHBoost = 125f; // add to speed
+        public const float RailBoosterHBoostReq = 155f; //absolute must be higher than this
 
-        public const float RailBoosterSpitHBoost = 100f;
-        public const float RailBoosterHBoostReq = 180f; //absolute must be higher than this
+        public const float RailBoosterSpitVBoost = -45f; // added jump speed
+        public const float RailBoosterSpitVBoostMin = -45f; // minimum jump speed
+        public const float RailBoosterVBoostReq = 45f; // must be less
+        public const float RailBoosterVBoostTimeMin = 0.1f; // Autojump time
+        public const float RailBoosterVBoostTimeMax = 0.2f; // Varjump time
+
+        public const float RailBoosterSpitVBoostAlt = 100f;
+        public const float RailBoosterVBoostReqAlt = 90f; // Horizontal must be less
 
         internal RailBooster LastRailBooster;
         internal RailBooster NextRailBooster;
@@ -238,6 +243,7 @@ namespace Celeste.Mod.Verillia.Utils
                 Logger.Log(LogLevel.Debug, "VerUtils/PlayerExtension",
                     $"Railbooster node has {LastRailBooster.Rails.Count} options.");
                 player.RefillDash();
+                Invincible = false;
 
                 #region Exit
                 // Immediately end the action on exit
@@ -252,24 +258,33 @@ namespace Celeste.Mod.Verillia.Utils
                     player.Visible = true;
                     playerRailBooster.Burst();
 
+                    bool VBoostJump = false;
                     if (Math.Abs(Velocity.X) >= RailBoosterHBoostReq)
                     {
                         Logger.Log(LogLevel.Debug, "VerUtils/PlayerExtenion",
                             $"Reached HBoost threshold with {Velocity.X}");
                         Velocity.X += Math.Sign(Velocity.X) * RailBoosterSpitHBoost;
+                        VBoostJump = true;
+                    }
+                    else if (Math.Abs(Velocity.X) <= RailBoosterVBoostReqAlt)
+                    {
+                        Velocity.Y += Math.Sign(Velocity.Y) * RailBoosterSpitVBoostAlt;
+                        player.varJumpSpeed = Velocity.Y;
+                        player.AutoJumpTimer = RailBoosterVBoostTimeMin;
+                        player.varJumpTimer = RailBoosterVBoostTimeMax;
                     }
 
                     if (Velocity.Y <= RailBoosterVBoostReq)
                     {
                         Logger.Log(LogLevel.Debug, "VerUtils/PlayerExtenion",
                             $"Reached VBoost threshold with {Velocity.Y}");
-                        Velocity.Y += RailBoosterSpitVBoost;
-                        player.AutoJump = true;
-                        player.AutoJumpTimer = RailBoosterVBoostTimer;
-                        player.varJumpTimer = RailBoosterVBoostTimer * 2;
-                        //Unsure if I should make RailBooster Launches a tech or not...
-                        player.varJumpSpeed = Velocity.Y > RailBoosterSpitVBoost ?
-                            Velocity.Y : RailBoosterSpitVBoost;
+                        Velocity.Y = Math.Min(Velocity.Y + RailBoosterSpitVBoost, RailBoosterSpitVBoostMin);
+                        player.varJumpSpeed = Velocity.Y;
+                        if (VBoostJump)
+                        {
+                            player.AutoJumpTimer = RailBoosterVBoostTimeMin;
+                            player.varJumpTimer = RailBoosterVBoostTimeMax;
+                        }
                     }
 
                     player.Speed = Velocity;
@@ -285,7 +300,6 @@ namespace Celeste.Mod.Verillia.Utils
                     //prepare for whatever
                     player.TreatNaive = false;
                     manualMovement = false;
-                    Invincible = false;
                     //Shock it
                     Celeste.Freeze(0.05f);
                     yield break;
@@ -339,7 +353,7 @@ namespace Celeste.Mod.Verillia.Utils
                 RailRope Rail = LastRailBooster.Rails[RailIndex];
                 if (Rail.Depth == VerUtils.Depths.RailBooster_Rail_BG)
                 {
-                    playerRailBooster.Depth = player.Depth + 1;
+                    playerRailBooster.BG = true;
                 }
                 if (Rail.endA == LastRailBooster)
                 {
@@ -362,7 +376,7 @@ namespace Celeste.Mod.Verillia.Utils
                 Logger.Log(LogLevel.Debug, "VerUtils/PlayerExtension",
                     $"Points to travel through: {Rail.PointCount}");
 
-                int e = Math.Sign(RailBoosterPath.End.Y - RailBoosterPath.Begin.Y);
+                int e = Math.Sign(RailBoosterPath.End.X - RailBoosterPath.Begin.X);
                 player.Facing = e != 0 ? (Facings)e : player.Facing;
                 playerRailBooster.sprite.Scale.X = (int)player.Facing;
 
@@ -434,7 +448,7 @@ namespace Celeste.Mod.Verillia.Utils
                     Scene.Tracker.GetNearestEntity<RailBooster>(player.ExactPosition);
                 Logger.Log(LogLevel.Debug, "VerUtils/PlayerExtension",
                     $"New node is at {LastRailBooster.Position}");
-                playerRailBooster.Depth = VerUtils.Depths.RailBooster_Node - 1;
+                playerRailBooster.BG = false;
             }
         }
         #endregion

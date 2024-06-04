@@ -5,8 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using static Celeste.LavaRect;
-using static Celeste.Trigger;
 
 namespace Celeste.Mod.Verillia.Utils.Entities
 {
@@ -39,7 +37,9 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             }
             private bool Moving = false;
             private bool Bursted = false;
+            private VertexLight light;
             public Phases Phase;
+            public bool BG = false;
 
 
             public PlayerRailBooster(Vector2 position, Player pp)
@@ -58,6 +58,8 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                 InitParticles();
 
                 Add(new MirrorReflection());
+
+                Add(light = new VertexLight(Vector2.Zero, player.Light.Color, player.Light.Alpha, (int)player.Light.startRadius, (int)player.Light.endRadius));
             }
 
             private static void InitParticles()
@@ -118,6 +120,15 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                         break;
                 }
                 base.Update();
+                if (BG)
+                {
+                    Depth = VerUtils.Depths.RailBooster_Rail_BG - 1;
+                }
+                else
+                {
+                    Depth = VerUtils.Depths.RailBooster_Node - 1;
+                    light.LastNonSolidPosition = light.Center;
+                }
             }
 
             public void Idle()
@@ -290,6 +301,17 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             {
                 spawn.Start();
                 sprite.Play("grow");
+            }
+            switch (sprite.CurrentAnimationID)
+            {
+                case "small":
+                    light.startRadius = 8;
+                    break;
+                case "loop":
+                    light.startRadius = 16;
+                    break;
+                default:
+                    break;
             }
         }
 

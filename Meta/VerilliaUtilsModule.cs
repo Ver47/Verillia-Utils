@@ -181,7 +181,8 @@ namespace Celeste.Mod.Verillia.Utils
         private Vector2 getLiftBoost(orig_get_LiftSpeed orig, Actor self)
         {
             Vector2 speed = orig(self);
-            // foreach on a list of shifters returning the first highest priority shifter
+            foreach (LiftSpeedBonus liftspeed in self.Components.GetAll<LiftSpeedBonus>())
+                speed += liftspeed.GetSpeed();
             return speed;
         }
         #endregion

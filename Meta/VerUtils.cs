@@ -29,7 +29,7 @@ namespace Celeste.Mod.Verillia.Utils
             var playerExt = player.Components.Get<VerilliaUtilsPlayerExt>();
             if (playerExt != null)
                 return playerExt;
-            Logger.Log(LogLevel.Info, "VerUtils",
+            Logger.Log(LogLevel.Verbose, "VerUtils",
                 "Adding Player Extension component to Player");
             player.Add(playerExt = new VerilliaUtilsPlayerExt());
             return playerExt;
@@ -181,10 +181,10 @@ namespace Celeste.Mod.Verillia.Utils
             // - BGDecals: BG Decals = 9,000
             // - BGParticles: BG Particles = 8,000
             // - SolidsBelow: Solids when set to BG mode = 5,000
+            public const int RailBooster_Rail_BG = 2_010;
             // - Below: Generic BG Entities = 2,000
             // - NPCs: Characters (People) = 1,000
             // - TheoCrystal: Theo (in Crystal) = 100
-            public const int RailBooster_Rail_BG = 10;
             //PLAYER = 0  =====================================
             // - Dust: Dust Bunnies? = -50
             // - Pickups: Jellyfish? = -100
