@@ -73,30 +73,36 @@ namespace Celeste.Mod.Verillia.Utils.Entities
         private VertexLight shine;
         private BloomPoint shinebloom;
 
-        public RailRope(EntityData data, Vector2 offset) : base(data.Position + offset)
+        public RailRope(EntityData data, Vector2 offset) 
+        : this(
+              data.Position + offset,
+              data.NodesOffset(offset)[0],
+              data.Int("slough", 0),
+              data.Bool("invincible", true),
+              data.Bool("bg", false),
+              data.Int("priority", 0)
+              ) { }
+
+        public RailRope(Vector2 positionA, Vector2 positionB, float slough, bool Invincible = true, bool Bg = false, int priority = 0) : base(positionA)
         {
             Logger.Log(LogLevel.Debug, "VerUtils/RailBooster-Rope",
                 "Constructing" );
 
             //Meta stuff
-            Vector2 position = data.Position + offset;
-            Background = data.Bool("bg", false);
-            InvincibleOnTravel = data.Bool("invincible", true);
+            Background = Bg;
+            InvincibleOnTravel = Invincible;
             Depth = Background ?
                 VerUtils.Depths.RailBooster_Rail_BG :
                 VerUtils.Depths.RailBooster_Rail_FG;
-            Priority = data.Int("priority", 0);
-            Position = position;
-
-            var slough = data.Int("slough", 0);
+            Priority = priority;
 
             //Set up the catenary
             Logger.Log(LogLevel.Debug, "VerUtils/RailBooster-Rope",
                 "Setting catenary...");
-            Vector2 p0 = (position.X < data.NodesOffset(offset)[0].X) ?
-                position : data.NodesOffset(offset)[0];
-            Vector2 p1 = (position.X < data.NodesOffset(offset)[0].X) ?
-                data.NodesOffset(offset)[0] : position;
+            Vector2 p0 = (positionA.X < positionB.X) ?
+                positionA : positionB;
+            Vector2 p1 = (positionA.X < positionB.X) ?
+                positionB : positionA;
             Logger.Log(LogLevel.Debug, "VerUtils/RailBooster-Rope",
                 $"Right point is at: {p1}");
             Logger.Log(LogLevel.Debug, "VerUtils/RailBooster-Rope",
