@@ -37,7 +37,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             }
             private bool Moving = false;
             private bool Bursted = false;
-            private VertexLight light;
+            internal VertexLight light;
             public Phases Phase;
             public bool BG = false;
 
@@ -126,7 +126,6 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                 else
                 {
                     Depth = VerUtils.Depths.RailBooster_Node - 1;
-                    light.LastNonSolidPosition = light.Center;
                 }
             }
 

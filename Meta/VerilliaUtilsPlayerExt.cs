@@ -155,13 +155,15 @@ namespace Celeste.Mod.Verillia.Utils
         public const float RailBoosterSpitHBoost = 125f; // add to speed
         public const float RailBoosterHBoostReq = 170f; //absolute must be higher than this
 
-        public const float RailBoosterSpitVBoost = -45f; // added jump speed
-        public const float RailBoosterSpitVBoostMin = -45f; // minimum jump speed
+        public const float RailBoosterSpitDBoostH = 90f; // adds to horizontal
+        public const float RailBoosterSpitDBoostV = 50f; // adds to vertical
+
+        public const float RailBoosterSpitVBoost = -45f; // minimum jump speed
         public const float RailBoosterVBoostReq = 45f; // must be less
-        public const float RailBoosterVBoostTimeMin = 0.1f; // Autojump time
+        public const float RailBoosterVBoostTimeMin = 0.15f; // Autojump time
         public const float RailBoosterVBoostTimeMax = 0.2f; // Varjump time
 
-        public const float RailBoosterSpitVBoostAlt = 100f;
+        public const float RailBoosterSpitVBoostAlt = 80f; //Add to vertical
         public const float RailBoosterVBoostReqAlt = 90f; // Horizontal must be less
 
         internal RailBooster LastRailBooster;
@@ -272,18 +274,28 @@ namespace Celeste.Mod.Verillia.Utils
                         player.varJumpSpeed = Velocity.Y;
                         player.AutoJumpTimer = RailBoosterVBoostTimeMin;
                         player.varJumpTimer = RailBoosterVBoostTimeMax;
+                        player.AutoJump = true;
+                    }
+                    else
+                    {
+                        Velocity.X += Math.Sign(Velocity.X) * RailBoosterSpitDBoostH;
+                        Velocity.Y += Math.Sign(Velocity.Y) * RailBoosterSpitDBoostV;
+                        player.AutoJumpTimer = RailBoosterVBoostTimeMin;
+                        player.varJumpTimer = RailBoosterVBoostTimeMax;
+                        player.AutoJump = true;
                     }
 
                     if (Velocity.Y <= RailBoosterVBoostReq)
                     {
                         Logger.Log(LogLevel.Debug, "VerUtils/PlayerExtenion",
                             $"Reached VBoost threshold with {Velocity.Y}");
-                        Velocity.Y = Math.Min(Velocity.Y + RailBoosterSpitVBoost, RailBoosterSpitVBoostMin);
+                        Velocity.Y = Math.Min(Velocity.Y, RailBoosterSpitVBoost);
                         player.varJumpSpeed = Velocity.Y;
                         if (VBoostJump)
                         {
                             player.AutoJumpTimer = RailBoosterVBoostTimeMin;
                             player.varJumpTimer = RailBoosterVBoostTimeMax;
+                            player.AutoJump = true;
                         }
                     }
 
