@@ -129,7 +129,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
 
             //Initialize the wobble
             //How do I make two seperate wobbles sync-
-            Calc.PushRandom((p0*length).GetHashCode());
+            Calc.PushRandom((int)(p0.LengthSquared()/length));
             float WobbleFrequency = Calc.Random.Range(MinWobbleFrequency, MaxWobbleFrequency);
             Logger.Log(LogLevel.Debug, "VerUtils/RailBooster-Rope",
                 $"Wobbling at {WobbleFrequency}Hz");
