@@ -130,32 +130,52 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             Add(Wobble = new SineWave(WobbleFrequency));
             Wobble.Randomize();
             TransitionListener trans = new TransitionListener();
-            trans.OnInBegin = WobbleSync;
+            trans.OnInBegin = () => { SineSync(); SineActive(false); };
+            trans.OnInEnd = () => { SineActive(true); };
+            trans.OnOutBegin = () => { SineActive(false); };
             Add(trans);
+            Tag = Tag.WithTag(Tags.TransitionUpdate);
 
             //Add the shine
-            Add(shine = new VertexLight(Color.White, 0, shineRadius, shinefadeRadius));
-            Add(shineAlpha = new SineWave(1 / Calc.Random.Range(minShineLength, maxShineLength), Calc.Random.NextSingle()));
-            shineAlpha.OnUpdate = UpdateShineAlpha;
-            Add(shineposition = new SineWave(1 / Calc.Random.Range(minShineLength, maxShineLength), Calc.Random.NextSingle()));
-            shineposition.OnUpdate = UpdateShinePos;
             Add(shinebloom = new BloomPoint(1, (shineRadius + shinefadeRadius) / 2));
+            Add(shine = new VertexLight(Color.White, 0, shineRadius, shinefadeRadius));
+            Add(shineAlpha = new SineWave(1 / Calc.Random.Range(minShineLength, maxShineLength), (float)(Calc.Random.NextDouble() * 6.2831854820251465)));
+            shineAlpha.OnUpdate = UpdateShineAlpha;
+            UpdateShineAlpha(shineAlpha.Value);
+            Add(shineposition = new SineWave(1 / Calc.Random.Range(minShineLength, maxShineLength), (float)(Calc.Random.NextDouble() * 6.2831854820251465)));
+            shineposition.OnUpdate = UpdateShinePos;
+            UpdateShinePos(shineposition.Value);
 
             Calc.PopRandom();
             Add(new MirrorReflection());
         }
 
-        private void WobbleSync()
+        private void SineActive(bool set)
+        {
+            Wobble.Active = set;
+            shineAlpha.Active = set;
+            shineposition.Active = set;
+        }
+
+        private void SineSync()
         {
             foreach (var e in Scene.Tracker.GetEntities<RailRope>())
             {
                 var rope = e as RailRope;
+                var curve = rope.getPathFrom(Position);
                 if (rope != this
-                    && rope.Rope.Begin == Rope.Begin
-                    && rope.Rope.End == Rope.End
-                    && rope.Rope.Control == Rope.Control)
+                    && curve.Begin == Rope.Begin
+                    && curve.End == Rope.End
+                    && curve.Control == Rope.Control)
                 {
-                    rope.Wobble.Counter = Wobble.Counter;
+                    shineposition.Frequency = rope.shineposition.Frequency;
+                    shineposition.Counter = rope.shineposition.Counter;
+                    shineAlpha.Frequency = rope.shineAlpha.Frequency;
+                    shineAlpha.Counter = rope.shineAlpha.Counter;
+                    Wobble.Frequency = rope.Wobble.Frequency;
+                    Wobble.Counter = rope.Wobble.Counter;
+                    UpdateShineAlpha(shineAlpha.Value);
+                    UpdateShinePos(shineposition.Value);
                 }
             }
         }

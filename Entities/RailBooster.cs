@@ -116,7 +116,6 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                         MoveTo(goal);
                         break;
                     case Phases.Burst:
-                        Burst();
                         break;
                 }
                 base.Update();
@@ -145,6 +144,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             {
                 if (!Bursted)
                     Audio.Play("event:/game/05_mirror_temple/redbooster_end", Position);
+                light.Alpha = 0;
                 sound.Stop();
                 Bursted = true;
                 AnimPlayNoReset("pop");
@@ -210,6 +210,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             Depth = IsEntry ?
                 VerUtils.Depths.RailBooster_Entry : VerUtils.Depths.RailBooster_Node;
             Collider = new Circle(10f, 0f, 2f);
+            Tag = Tag.WithTag(Tags.TransitionUpdate);
 
             Add(sprite = GFX.SpriteBank.Create("VerUtils-railbooster"));
             sprite.Play(IsEntry ? "loop" : "small");
@@ -217,7 +218,9 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             Add(new PlayerCollider(OnPlayer));
             Add(light = new VertexLight(Color.White, 1f, 16, 32));
             var trans = new TransitionListener();
-            trans.OnInBegin = OnOut;
+            trans.OnInBegin = OnIn;
+            trans.OnInEnd = () => { sprite.Active = true; };
+            trans.OnOutBegin = () => { sprite.Active = false; };
             Add(trans);
 
             Add(new MirrorReflection());
@@ -226,6 +229,22 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             {
                 sprite.Scale = Vector2.One * (1f + f * 0.25f);
             }));
+
+            switch (sprite.CurrentAnimationID)
+            {
+                case "small":
+                    light.startRadius = 6;
+                    light.endRadius = 16;
+                    break;
+                case "loop":
+                    light.startRadius = 16;
+                    light.endRadius = 32;
+                    break;
+                default:
+                    break;
+            }
+            light.InSolidAlphaMultiplier = 1f;
+            light.LastNonSolidPosition = light.Center;
         }
 
         public void Connect(Scene scene)
@@ -252,7 +271,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             }
         }
 
-        private void OnOut()
+        private void OnIn()
         {
             foreach (var e in Scene.Tracker.GetEntities<RailBooster>())
             {
@@ -268,6 +287,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                     RemoveSelf();
                 }
             }
+            sprite.Active = false;
         }
 
         public void OnPlayer(Player player)
@@ -305,14 +325,18 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             switch (sprite.CurrentAnimationID)
             {
                 case "small":
-                    light.startRadius = 8;
+                    light.startRadius = 6;
+                    light.endRadius = 16;
                     break;
                 case "loop":
                     light.startRadius = 16;
+                    light.endRadius = 32;
                     break;
                 default:
                     break;
             }
+            light.InSolidAlphaMultiplier = 1f;
+            light.LastNonSolidPosition = light.Center;
         }
 
         public void ResetTimer()

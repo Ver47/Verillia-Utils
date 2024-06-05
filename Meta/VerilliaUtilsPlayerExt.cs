@@ -150,10 +150,10 @@ namespace Celeste.Mod.Verillia.Utils
 
         #region Railboost
         public const float RailBoosterTravelSpeed = 180f;
-        public const float RailBoosterSpitSpeed = 180f;
+        public const float RailBoosterSpitSpeed = 200f;
 
         public const float RailBoosterSpitHBoost = 125f; // add to speed
-        public const float RailBoosterHBoostReq = 155f; //absolute must be higher than this
+        public const float RailBoosterHBoostReq = 170f; //absolute must be higher than this
 
         public const float RailBoosterSpitVBoost = -45f; // added jump speed
         public const float RailBoosterSpitVBoostMin = -45f; // minimum jump speed
