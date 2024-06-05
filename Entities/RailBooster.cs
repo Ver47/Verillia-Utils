@@ -12,7 +12,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
     [CustomEntity("VerUtils/RailBooster-Node")]
     public class RailBooster : Entity
     {
-        internal class PlayerRailBooster : Entity
+        public class PlayerRailBooster : Entity
         {
             internal Sprite sprite;
             private SoundSource sound;
@@ -42,7 +42,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             public bool BG = false;
 
 
-            public PlayerRailBooster(Vector2 position, Player pp)
+            internal PlayerRailBooster(Vector2 position, Player pp)
             {
                 Add(sprite = GFX.SpriteBank.Create("VerUtils-railbooster"));
                 sprite.OnFinish = OnFinish;
