@@ -14,7 +14,7 @@ Class: `RailBooster` and `RailRope`
 
 Madeline enters through one of the entry nodes and zips around in a network of rails, changing direction in forks.
 If she were to launch in any of the cardinal directions, she gains a "small" boost to launch her further.
-Rails may or may not 
+Rails may or may not give the player invincibility on travel.
 
 Bugs(/Features):
 - Slowrailing
