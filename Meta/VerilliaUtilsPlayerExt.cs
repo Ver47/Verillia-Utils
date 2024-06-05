@@ -137,7 +137,7 @@ namespace Celeste.Mod.Verillia.Utils
 
         internal void InitializeStates()
         {
-            Logger.Log(LogLevel.Info, "VerUtils/PlayerExtension",
+            Logger.Log(LogLevel.Debug, "VerUtils/PlayerExtension",
                 "Setting up states.");
             StRailBoost = player.StateMachine.AddState(
                 "VerUtils-RailBoost",
