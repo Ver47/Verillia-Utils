@@ -54,6 +54,8 @@ namespace Celeste.Mod.Verillia.Utils
             ActorLiftBoostHook = new Hook(typeof(Actor).GetProperty("LiftSpeed", BindingFlags.Instance | BindingFlags.Public).GetGetMethod(), getLiftBoost);
             On.Celeste.Actor.MoveHExact += MoveHExact;
             On.Celeste.Actor.MoveVExact += MoveVExact;
+            On.Celeste.Actor.ctor += Actor_ctor;
+            On.Celeste.Actor.Update += Actor_Update;
 
             //Custom Event Conditions
             EventFirer.Hooks.Init();
@@ -81,6 +83,8 @@ namespace Celeste.Mod.Verillia.Utils
             ActorLiftBoostHook.Dispose();
             On.Celeste.Actor.MoveHExact -= MoveHExact;
             On.Celeste.Actor.MoveVExact -= MoveVExact;
+            On.Celeste.Actor.ctor -= Actor_ctor;
+            On.Celeste.Actor.Update -= Actor_Update;
 
             //Custom Event Conditions
             EventFirer.Hooks.DeInit();
@@ -212,6 +216,18 @@ namespace Celeste.Mod.Verillia.Utils
             if (over.Active)
                 over.V += goalpos - (int)self.Position.Y;
             return ret;
+        }
+
+        private void Actor_ctor(On.Celeste.Actor.orig_ctor orig, Actor self, Vector2 pos)
+        {
+            orig(self, pos);
+            self.GetOverpass();
+        }
+
+        private void Actor_Update(On.Celeste.Actor.orig_Update orig, Actor self)
+        {
+            orig(self);
+            self.GetOverpass().Reset();
         }
         #endregion
     }

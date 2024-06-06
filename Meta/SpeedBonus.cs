@@ -22,11 +22,13 @@ namespace Celeste.Mod.Verillia.Utils
         {
             base.Update();
             var overpass = actor.GetOverpass();
-            overpass.Active = false;
+            //Record previous overpass
+            int H = overpass.H;
+            int V = overpass.V;
             var next = Move(overpass.H, overpass.V);
-            overpass.Active = true;
-            overpass.H = (int)Math.Round(next.X);
-            overpass.V = (int)Math.Round(next.Y);
+            //Add deltaoverpass
+            overpass.H += H - (int)Math.Round(next.X);
+            overpass.V += V - (int)Math.Round(next.Y);
         }
 
         public virtual Vector2 GetLiftSpeed(Vector2 orig)

@@ -68,11 +68,11 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                 {
                     if (actor.Position.X + actor.Collider.Left >= source.Position.X + source.Collider.Right)
                     {
-                        actor.MoveToX(source.Position.X + source.Collider.Right - actor.Collider.Left);
+                        actor.NaiveMoveToX(source.Position.X + source.Collider.Right - actor.Collider.Left);
                     }
                     else
                     {
-                        actor.MoveToX(source.Position.X + source.Collider.Left - actor.Collider.Right);
+                        actor.NaiveMoveToX(source.Position.X + source.Collider.Left - actor.Collider.Right);
                     }
                     return over;
                 }
@@ -90,11 +90,11 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                 if (!Collide.Check(actor, source))
                     if (actor.Position.Y + actor.Collider.Top >= source.Position.Y + source.Collider.Bottom)
                     {
-                        actor.MoveToY(source.Position.Y + source.Collider.Bottom - actor.Collider.Top);
+                        actor.NaiveMoveToY(source.Position.Y + source.Collider.Bottom - actor.Collider.Top);
                     }
                     else
                     {
-                        actor.MoveToY(source.Position.Y + source.Collider.Top - actor.Collider.Bottom);
+                        actor.NaiveMoveToY(source.Position.Y + source.Collider.Top - actor.Collider.Bottom);
                     }
                 return over;
             }

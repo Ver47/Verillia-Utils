@@ -46,26 +46,6 @@ namespace Celeste.Mod.Verillia.Utils
             return ret;
         }
 
-        public static bool IsRidingAny(this Actor actor, IEnumerable<Solid> solids)
-        {
-            foreach(var c in solids)
-            {
-                if (actor.IsRiding(c))
-                    return true;
-            }
-            return false;
-        }
-
-        public static bool IsRidingAny(this Actor actor, IEnumerable<JumpThru> solids)
-        {
-            foreach (var c in solids)
-            {
-                if (actor.IsRiding(c))
-                    return true;
-            }
-            return false;
-        }
-
         public static bool IsRidingAnySolid(this Actor actor)
         {
             foreach (Solid c in actor.Scene.Tracker.GetEntities<Solid>())
@@ -91,6 +71,24 @@ namespace Celeste.Mod.Verillia.Utils
             if (actor.IsRidingAnySolid())
                 return true;
             return actor.IsRidingAnyJumpThru();
+        }
+
+        public static void NaiveMoveTo(this Actor actor, Vector2 goal)
+        {
+            Vector2 amount = Vector2.Zero;
+            amount.X = (float)((double)goal.X - (double)actor.Position.X - (double)actor.movementCounter.X);
+            amount.Y = (float)((double)goal.Y - (double)actor.Position.Y - (double)actor.movementCounter.Y);
+            actor.NaiveMove(amount);
+        }
+
+        public static void NaiveMoveToX(this Actor actor, float goal)
+        {
+            actor.NaiveMoveTo(new Vector2(goal, actor.ExactPosition.Y));
+        }
+
+        public static void NaiveMoveToY(this Actor actor, float goal)
+        {
+            actor.NaiveMoveTo(new Vector2(actor.ExactPosition.X, goal));
         }
 
         #endregion

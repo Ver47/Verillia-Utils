@@ -21,8 +21,12 @@ namespace Celeste.Mod.Verillia.Utils
 
         public override void Update()
         {
-            H = V = 0;
             base.Update();
+        }
+
+        internal void Reset()
+        {
+            H = V = 0;
         }
     }
 }
