@@ -8,10 +8,12 @@ using Celeste;
 using Microsoft.Xna.Framework;
 using System.Security.Cryptography;
 using IL.MonoMod;
+using Celeste.Mod.Entities;
 
 namespace Celeste.Mod.Verillia.Utils.Entities
 {
     [Tracked]
+    [CustomEntity("VerUtils/Shifter")]
     public class Shifter : Entity
     {
 
