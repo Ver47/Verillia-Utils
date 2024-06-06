@@ -183,8 +183,13 @@ namespace Celeste.Mod.Verillia.Utils
 
         public void RailBoostEnd()
         {
-            //Reenable collision
+            //Ensure that glitches are impossible.
+            player.Visible = true;
+            playerRailBooster.Burst();
+            NextRailBooster = null;
             player.TreatNaive = false;
+            manualMovement = false;
+            Invincible = false;
         }
 
         public IEnumerator RailBoostCoroutine()
