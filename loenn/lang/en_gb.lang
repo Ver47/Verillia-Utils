@@ -25,8 +25,21 @@ entities.VerUtils/RailBooster-Rail.attributes.description.bg=If the rope will sh
 entities.VerUtils/RailBooster-Node.placements.name.normal=Rail Booster Node (Entry)
 entities.VerUtils/RailBooster-Node.placements.name.instantFork=Rail Booster Node (Instant Fork)
 
+
 entities.VerUtils/RailBooster-Node.attributes.name.instant=Instant Choice
 entities.VerUtils/RailBooster-Rope.attributes.description.instant=On the case of a fork, whether or not the player immediately chooses an option.
 
 entities.VerUtils/RailBooster-Node.attributes.name.isEntry=Entrance
 entities.VerUtils/RailBooster-Rope.attributes.description.isEntry=If the player can use this as an entrance to a rail booster network. Pretty useless beyond instant choice forks as the ropes already set them.
+
+
+
+#Shifter
+entities.VerUtils/Shifter.placements.name.normal=Space Shifter
+
+
+entities.VerUtils/Shifter.attributes.name.SpeedX=Speed X
+entities.VerUtils/Shifter.attributes.description.SpeedX=The horizontal speed of the shift, inversely gives liftboost.
+
+entities.VerUtils/Shifter.attributes.name.SpeedY=Speed Y
+entities.VerUtils/Shifter.attributes.description.SpeedY=The verticalspeed of the shift, inversely gives liftboost.
