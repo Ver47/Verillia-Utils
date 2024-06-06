@@ -45,6 +45,54 @@ namespace Celeste.Mod.Verillia.Utils
                 actor.Add(ret = new Overpass());
             return ret;
         }
+
+        public static bool IsRidingAny(this Actor actor, IEnumerable<Solid> solids)
+        {
+            foreach(var c in solids)
+            {
+                if (actor.IsRiding(c))
+                    return true;
+            }
+            return false;
+        }
+
+        public static bool IsRidingAny(this Actor actor, IEnumerable<JumpThru> solids)
+        {
+            foreach (var c in solids)
+            {
+                if (actor.IsRiding(c))
+                    return true;
+            }
+            return false;
+        }
+
+        public static bool IsRidingAnySolid(this Actor actor)
+        {
+            foreach (Solid c in actor.Scene.Tracker.GetEntities<Solid>())
+            {
+                if (actor.IsRiding(c))
+                    return true;
+            }
+            return false;
+        }
+
+        public static bool IsRidingAnyJumpThru(this Actor actor)
+        {
+            foreach (JumpThru c in actor.Scene.Tracker.GetEntities<JumpThru>())
+            {
+                if (actor.IsRiding(c))
+                    return true;
+            }
+            return false;
+        }
+
+        public static bool IsRidingAnySolidOrJumpThru(this Actor actor)
+        {
+            if (actor.IsRidingAnySolid())
+                return true;
+            return actor.IsRidingAnyJumpThru();
+        }
+
         #endregion
 
         #region Scene

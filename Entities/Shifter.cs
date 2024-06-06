@@ -40,22 +40,29 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                 return orig-Speed;
             }
 
-            public override void Move(int overH, int overV)
+            public override Vector2 Move(int overH, int overV)
             {
-                base.Move(overH, overV);
-                if (actor.OnGround())
-                    return;
+                if (actor.IsRidingAnySolidOrJumpThru())
+                    return base.Move(overH, overV);
                 if (actor.TreatNaive)
-                    return;
+                    return base.Move(overH, overV);
                 if (!Collide.Check(actor, source))
-                    return;
+                    return base.Move(overH, overV);
                 // consider move
                 Vector2 move = Speed * Engine.DeltaTime;
-                move.X -= overH * Math.Sign(Math.Sign(Speed.X) - Math.Sign(overH));
-                move.Y -= overV * Math.Sign(Math.Sign(Speed.Y) - Math.Sign(overV));
-                // overpass exceeding speed will just be zero (cannot be different signs.)
-                move.X *= Math.Sign(Math.Sign(Speed.X) + Math.Sign(move.X));
-                move.Y *= Math.Sign(Math.Sign(Speed.Y) + Math.Sign(move.Y));
+                Vector2 og = move;
+                Vector2 over = new Vector2(overH, overV);
+
+                int SpeedSign = Math.Sign(Speed.X);
+                if (SpeedSign != 0) //determine if the overpass actually matters
+                {
+                    //remove the overpass (ensure that Speed and the overpass are of different direction)
+                    move.X -= overH * Math.Sign(SpeedSign - Math.Sign(overH));
+                    //ensure that it doesn't get reversed
+                    move.X *= Math.Sign(SpeedSign + Math.Sign(move.X));
+                    //remove the used up overpass
+                    over.X -= og.X - move.X;
+                }
                 actor.MoveH(move.X);
                 if (!Collide.Check(actor, source))
                 {
@@ -67,7 +74,17 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                     {
                         actor.MoveToX(source.Position.X + source.Collider.Left - actor.Collider.Right);
                     }
-                    return;
+                    return over;
+                }
+                SpeedSign = Math.Sign(Speed.Y);
+                if (SpeedSign != 0) //determine if the overpass actually matters
+                {
+                    //remove the overpass
+                    move.Y -= overH * Math.Sign(SpeedSign - Math.Sign(overV));
+                    //ensure that it doesn't get reversed
+                    move.Y *= Math.Sign(SpeedSign + Math.Sign(move.Y));
+                    //remove the used up overpass
+                    over.Y -= og.Y - move.Y;
                 }
                 actor.MoveV(move.Y);
                 if (!Collide.Check(actor, source))
@@ -79,6 +96,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                     {
                         actor.MoveToY(source.Position.Y + source.Collider.Top - actor.Collider.Bottom);
                     }
+                return over;
             }
         }
 

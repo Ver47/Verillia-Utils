@@ -22,7 +22,11 @@ namespace Celeste.Mod.Verillia.Utils
         {
             base.Update();
             var overpass = actor.GetOverpass();
-            Move(overpass.H, overpass.V);
+            overpass.Active = false;
+            var next = Move(overpass.H, overpass.V);
+            overpass.Active = true;
+            overpass.H = (int)Math.Round(next.X);
+            overpass.V = (int)Math.Round(next.Y);
         }
 
         public virtual Vector2 GetLiftSpeed(Vector2 orig)
@@ -30,6 +34,6 @@ namespace Celeste.Mod.Verillia.Utils
             return Vector2.Zero;
         }
 
-        public virtual void Move(int overH, int overV) { }
+        public virtual Vector2 Move(int overH, int overV) { return new Vector2(overH, overV); }
     }
 }

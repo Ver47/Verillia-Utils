@@ -196,7 +196,9 @@ namespace Celeste.Mod.Verillia.Utils
             bool ret = orig(self, moveH, onCollide, pusher);
             if (ret || pusher is not null)
                 return ret;
-            self.GetOverpass().H += goalpos - (int)self.Position.X;
+            var over = self.GetOverpass();
+            if (over.Active)
+                over.H += goalpos - (int)self.Position.X;
             return ret;
         }
 
@@ -206,7 +208,9 @@ namespace Celeste.Mod.Verillia.Utils
             bool ret = orig(self, moveV, onCollide, pusher);
             if (ret || pusher is not null)
                 return ret;
-            self.GetOverpass().V += goalpos - (int)self.Position.Y;
+            var over = self.GetOverpass();
+            if (over.Active)
+                over.V += goalpos - (int)self.Position.Y;
             return ret;
         }
         #endregion
