@@ -136,7 +136,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             Add(Wobble = new SineWave(WobbleFrequency));
             Wobble.Randomize();
             TransitionListener trans = new TransitionListener();
-            trans.OnInBegin = () => { SineSync(); SineActive(false); };
+            trans.OnInBegin = () => { SineActive(false); };
             trans.OnInEnd = () => { SineActive(true); };
             trans.OnOutBegin = () => { SineActive(false); };
             Add(trans);
@@ -161,29 +161,6 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             Wobble.Active = set;
             shineAlpha.Active = set;
             shineposition.Active = set;
-        }
-
-        private void SineSync()
-        {
-            foreach (var e in Scene.Tracker.GetEntities<RailRope>())
-            {
-                var rope = e as RailRope;
-                var curve = rope.getPathFrom(Position);
-                if (rope != this
-                    && curve.Begin == Rope.Begin
-                    && curve.End == Rope.End
-                    && curve.Control == Rope.Control)
-                {
-                    shineposition.Frequency = rope.shineposition.Frequency;
-                    shineposition.Counter = rope.shineposition.Counter;
-                    shineAlpha.Frequency = rope.shineAlpha.Frequency;
-                    shineAlpha.Counter = rope.shineAlpha.Counter;
-                    Wobble.Frequency = rope.Wobble.Frequency;
-                    Wobble.Counter = rope.Wobble.Counter;
-                    UpdateShineAlpha(shineAlpha.Value);
-                    UpdateShinePos(shineposition.Value);
-                }
-            }
         }
 
         public override void Awake(Scene scene)
