@@ -29,10 +29,21 @@ namespace Celeste.Mod.Verillia.Utils
             var playerExt = player.Components.Get<VerilliaUtilsPlayerExt>();
             if (playerExt != null)
                 return playerExt;
-            Logger.Log(LogLevel.Verbose, "VerUtils",
+            Logger.Log(LogLevel.Debug, "VerUtils",
                 "Adding Player Extension component to Player");
             player.Add(playerExt = new VerilliaUtilsPlayerExt());
             return playerExt;
+        }
+        #endregion
+
+        #region Actor
+        //For Ease of getting overpass component
+        public static Overpass GetOverpass(this Actor actor)
+        {
+            Overpass ret = actor.Components.Get<Overpass>();
+            if (ret is null)
+                actor.Add(ret = new Overpass());
+            return ret;
         }
         #endregion
 

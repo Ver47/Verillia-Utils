@@ -25,8 +25,8 @@ namespace Celeste.Mod.Verillia.Utils
         public bool Aerodynamic = false;
 
         //Speed stuff
-        internal Vector2 Velocity; // speed appeared outside
-        internal Vector2 internalSpeed; // speed moved by player itself
+        internal Vector2 Velocity; // Speed appeared outside
+        internal Vector2 internalSpeed; // Speed moved by player itself
         internal bool manualMovement;
 
         //Event Firing
@@ -152,13 +152,13 @@ namespace Celeste.Mod.Verillia.Utils
         public const float RailBoosterTravelSpeed = 180f;
         public const float RailBoosterSpitSpeed = 200f;
 
-        public const float RailBoosterSpitHBoost = 125f; // add to speed
+        public const float RailBoosterSpitHBoost = 125f; // add to Speed
         public const float RailBoosterHBoostReq = 170f; //absolute must be higher than this
 
         public const float RailBoosterSpitDBoostH = 90f; // adds to horizontal
         public const float RailBoosterSpitDBoostV = 50f; // adds to vertical
 
-        public const float RailBoosterSpitVBoost = -45f; // minimum jump speed
+        public const float RailBoosterSpitVBoost = -45f; // minimum jump Speed
         public const float RailBoosterVBoostReq = 45f; // must be less
         public const float RailBoosterVBoostTimeMin = 0.15f; // Autojump time
         public const float RailBoosterVBoostTimeMax = 0.2f; // Varjump time
@@ -197,14 +197,14 @@ namespace Celeste.Mod.Verillia.Utils
                 player.Collider.Center + player.ExactPosition
                 );
             int RailIndex = -1;
-            //Defaults to player speed, helps on instant choice and spit tech
+            //Defaults to player Speed, helps on instant choice and spit tech
             Velocity = player.Speed;
             Facings Heading;
             if (Velocity.X == 0)
                 Heading = player.Facing;
             else
                 Heading = Velocity.X > 0 ? Facings.Right : Facings.Left;
-            //the player having speed in this state is going to be annoying.
+            //the player having Speed in this state is going to be annoying.
             player.Speed = Vector2.Zero;
             manualMovement = true;
             playerRailBooster.sprite.Scale.X = (int)player.Facing;

@@ -52,6 +52,8 @@ namespace Celeste.Mod.Verillia.Utils
 
             //Actor methods
             ActorLiftBoostHook = new Hook(typeof(Actor).GetProperty("LiftSpeed", BindingFlags.Instance | BindingFlags.Public).GetGetMethod(), getLiftBoost);
+            On.Celeste.Actor.MoveHExact += MoveHExact;
+            On.Celeste.Actor.MoveVExact += MoveVExact;
 
             //Custom Event Conditions
             EventFirer.Hooks.Init();
@@ -77,6 +79,8 @@ namespace Celeste.Mod.Verillia.Utils
 
             //Actor methods
             ActorLiftBoostHook.Dispose();
+            On.Celeste.Actor.MoveHExact -= MoveHExact;
+            On.Celeste.Actor.MoveVExact -= MoveVExact;
 
             //Custom Event Conditions
             EventFirer.Hooks.DeInit();
@@ -181,9 +185,29 @@ namespace Celeste.Mod.Verillia.Utils
         private Vector2 getLiftBoost(orig_get_LiftSpeed orig, Actor self)
         {
             Vector2 speed = orig(self);
-            foreach (LiftSpeedBonus liftspeed in self.Components.GetAll<LiftSpeedBonus>())
-                speed += liftspeed.GetSpeed();
+            foreach (SpeedBonus liftspeed in self.Components.GetAll<SpeedBonus>())
+                speed = liftspeed.GetLiftSpeed(speed);
             return speed;
+        }
+
+        private bool MoveHExact(On.Celeste.Actor.orig_MoveHExact orig, Actor self, int moveH, Collision onCollide = null, Solid pusher = null)
+        {
+            int goalpos = (int)self.Position.X + moveH;
+            bool ret = orig(self, moveH, onCollide, pusher);
+            if (ret || pusher is not null)
+                return ret;
+            self.GetOverpass().H += goalpos - (int)self.Position.X;
+            return ret;
+        }
+
+        private bool MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int moveV, Collision onCollide = null, Solid pusher = null)
+        {
+            int goalpos = (int)self.Position.Y + moveV;
+            bool ret = orig(self, moveV, onCollide, pusher);
+            if (ret || pusher is not null)
+                return ret;
+            self.GetOverpass().V += goalpos - (int)self.Position.Y;
+            return ret;
         }
         #endregion
     }
