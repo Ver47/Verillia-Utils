@@ -5,7 +5,7 @@ local drawableSprite = require("structs.drawable_sprite")
 
 local shifter = {}
 
-shifter.name = "shifter"
+shifter.name = "VerUtils/Shifter"
 shifter.depth = 0
 shifter.color = {0.87, 0.71, 0.32, 0.5}
 
@@ -20,7 +20,7 @@ end
 
 
 shifter.placements = {
-    name = "shifter",
+    name = "normal",
     data = {
         width = 8,
         height = 8,
