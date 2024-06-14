@@ -143,7 +143,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             {
                 if (!Bursted)
                     Audio.Play("event:/game/05_mirror_temple/redbooster_end", Position);
-                light.Alpha = 0;
+                light.Visible = false;
                 sound.Stop();
                 Bursted = true;
                 AnimPlayNoReset("pop");
@@ -182,7 +182,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
         public float ReentryTimer = 0f;
         public List<RailRope> Rails = new();
         public int? PrioritizedIndex { get; private set; }
-        public int HighestPriority { get; private set; } = 0;
+        private int GroupPriority = int.MinValue;
 
         private Sprite sprite;
         private VertexLight light;
@@ -214,7 +214,8 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             Add(sprite = GFX.SpriteBank.Create("VerUtils-railbooster"));
             sprite.Play(IsEntry ? "loop" : "small");
 
-            Add(new PlayerCollider(OnPlayer));
+            if (IsEntry)
+                Add(new PlayerCollider(OnPlayer));
             Add(light = new VertexLight(Color.White, 1f, 16, 32));
             var trans = new TransitionListener();
             trans.OnInBegin = OnIn;
@@ -292,8 +293,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
         public void OnPlayer(Player player)
         {
             var playerExt = player.GetVerUtilsExt();
-            if (player.StateMachine.State == playerExt.StRailBoost
-                || !IsEntry || ReentryTimer > 0)
+            if (player.StateMachine.State == playerExt.StRailBoost || ReentryTimer > 0)
                 return;
             Logger.Log(LogLevel.Debug, "VerUtils/RailBooster-Node",
                 "Railboosted");
@@ -346,15 +346,57 @@ namespace Celeste.Mod.Verillia.Utils.Entities
 
         public void AddRail(RailRope rail)
         {
+            if (Rails.Contains(rail))
+                return;
             Logger.Log(LogLevel.Debug, "VerUtils/RailBooster-Node",
-                "Adding Rail");
-            Logger.Log(LogLevel.Debug, "VerUtils/RailBooster-Node",
-                $"Previous amount of rails: {Rails.Count}");
-            if (!Rails.Contains(rail))
+            "Adding Rail");
+            if (RegisterRailPriority(rail))
+                return;
+            Rails.Add(rail);
+        }
+
+        private bool RegisterRailPriority(RailRope rail)
+        {
+            int thisPriority = rail.Priority;
+            if (Rails.Count == 0)
+            {
+                GroupPriority = thisPriority;
+                return false;
+            }
+            if (GroupPriority > thisPriority)
+            {
+                if (Rails.Count == 1)
+                {
+                    PrioritizedIndex = 0;
+                    return false;
+                }
+                return true;
+            }
+            if (GroupPriority == thisPriority)
+                return false;
+            if (PrioritizedIndex is int PIndex)
+            {
+                RailRope lastRail = Rails[PIndex];
+                int lastPriority = lastRail.Priority;
+                Rails = [lastRail, rail];
+                if (lastPriority == thisPriority)
+                {
+                    PrioritizedIndex = null;
+                    return true;
+                }
+                if (lastPriority > thisPriority)
+                {
+                    PrioritizedIndex = 0;
+                    return true;
+                }
+                PrioritizedIndex = 1;
+            }
+            else
+            {
                 Rails.Add(rail);
-            int amount = Rails.Count;
-            Logger.Log(LogLevel.Debug, "VerUtils/RailBooster-Node",
-                $"Current amount of rails: {amount}");
+                PrioritizedIndex = Rails.Count - 1;
+            }
+            return true;
         }
 
         public float getTimeLimit()
@@ -396,16 +438,23 @@ namespace Celeste.Mod.Verillia.Utils.Entities
 
         public int getDefault(int index)
         {
+            int PIndex = -1;
+            if (PrioritizedIndex is int P)
+                PIndex = P;
             switch (Rails.Count)
             {
                 case 1:
                     return 0;
                 case 2:
                     if (index == -1)
+                    {
+                        if (PIndex != -1)
+                            return PIndex;
                         return -1;
+                    }
                     return (index == 0) ? 1 : 0;
                 default:
-                    if (PrioritizedIndex is int PIndex)
+                    if (PIndex != -1)
                         return PIndex;
                     return index;
             }

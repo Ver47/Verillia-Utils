@@ -17,10 +17,11 @@ namespace Celeste.Mod.Verillia.Utils
         #region META
 
         public bool Invincible = false;
+        private bool _dodging;
         public bool Dodging
         {
-            get { return player.StateMachine.State == Player.StDash || Dodging; }
-            set { Dodging = value; }
+            get { return player.StateMachine.State == Player.StDash || _dodging; }
+            set { _dodging = value; }
         }
         public bool Aerodynamic = false;
 
@@ -218,7 +219,6 @@ namespace Celeste.Mod.Verillia.Utils
             float Timer = RailBooster.CenterSuckTime;
             Logger.Log(LogLevel.Debug, "VerUtils/PlayerExtension",
                 $"Going to entry node at {LastRailBooster.Position}");
-            Vector2 playerEnterPosition = player.ExactPosition;
             Vector2 movegoal;
             while (Timer > 0 &&
                 (player.ExactPosition != LastRailBooster.Center-player.Collider.Center))
@@ -231,15 +231,12 @@ namespace Celeste.Mod.Verillia.Utils
                     LastRailBooster.Center-player.Collider.Center,
                     RailBooster.CenterSuckSpeed * Engine.DeltaTime
                     );
-                player.NaiveMove(movegoal - player.ExactPosition);
+                player.NaiveMoveTo(movegoal);
                 Timer -= Engine.DeltaTime;
             }
             bool justEntered = true;
             //Lock the player unto the railbooster
-            player.NaiveMove(
-                (LastRailBooster.Center - player.Collider.Center)
-                - player.ExactPosition
-                );
+            player.NaiveMoveTo(LastRailBooster.Center - player.Collider.Center);
             #endregion
 
             player.Visible = false;
@@ -257,6 +254,10 @@ namespace Celeste.Mod.Verillia.Utils
                 // please ensure that there is a way to return to StNormal
                 if (LastRailBooster.Exit(justEntered))
                 {
+                    if (justEntered)
+                    {
+                        playerRailBooster.Idle();
+                    }
                     Logger.Log(LogLevel.Debug, "VerUtils/PlayerExtension",
                         $"Exiting railboost with a Velocity of {Velocity}");
                     player.Facing = Heading;
@@ -285,6 +286,7 @@ namespace Celeste.Mod.Verillia.Utils
                     {
                         Velocity.X += Math.Sign(Velocity.X) * RailBoosterSpitDBoostH;
                         Velocity.Y += Math.Sign(Velocity.Y) * RailBoosterSpitDBoostV;
+                        player.varJumpSpeed = Velocity.Y;
                         player.AutoJumpTimer = RailBoosterVBoostTimeMin;
                         player.varJumpTimer = RailBoosterVBoostTimeMax;
                         player.AutoJump = true;
@@ -424,7 +426,7 @@ namespace Celeste.Mod.Verillia.Utils
                         Logger.Log(LogLevel.Verbose, "VerUtils/PlayerExtension",
                             $"Travelling through rail segment of remaining length: {seglen}");
                         dist -= seglen;
-                        player.NaiveMove(movegoal - player.ExactPosition);
+                        player.NaiveMoveTo(movegoal);
                         Logger.Log(LogLevel.Verbose, "VerUtils/PlayerExtension",
                             $"Travelled, remaining distance: {Math.Max(dist, 0)}");
                         //goto next frame if needed distance is travelled
@@ -451,7 +453,7 @@ namespace Celeste.Mod.Verillia.Utils
                     $"RailTravel ended at {player.Position + player.Collider.Center}. Correcting...");
                 //Put the player at the end of the rail.
                 movegoal = RailBoosterPath.End - player.Collider.Center;
-                player.NaiveMove(movegoal - player.ExactPosition);
+                player.NaiveMoveTo(movegoal);
                 #endregion
 
                 // set next heading.

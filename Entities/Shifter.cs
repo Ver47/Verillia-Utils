@@ -20,12 +20,14 @@ namespace Celeste.Mod.Verillia.Utils.Entities
         internal class SpeedDistort : SpeedBonus
         {
             Vector2 Speed;
+            bool AffectLiftBoostCap = true;
             Shifter source;
 
-            public SpeedDistort(Vector2 speed, Shifter shifter)
+            public SpeedDistort(Vector2 speed, Shifter shifter, bool affectLiftBoostCap = true)
             {
                 Speed = speed;
                 source = shifter;
+                AffectLiftBoostCap = affectLiftBoostCap;
             }
 
             public override void Update()
@@ -42,6 +44,11 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                 return orig-Speed;
             }
 
+            public override Vector2 GetLiftSpeedCapShift(Vector2 orig)
+            {
+                return orig - Speed;
+            }
+
             public override Vector2 Move(int overH, int overV)
             {
                 if (actor.IsRidingAnySolidOrJumpThru())
@@ -54,14 +61,13 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                 Vector2 move = Speed * Engine.DeltaTime;
                 Vector2 og = move;
                 Vector2 over = new Vector2(overH, overV);
-
                 int SpeedSign = Math.Sign(Speed.X);
-                if (SpeedSign != 0) //determine if the overpass actually matters
+                if (overH != 0 && SpeedSign != 0) //determine if the overpass actually matters
                 {
-                    //remove the overpass (ensure that Speed and the overpass are of different direction)
-                    move.X -= overH * Math.Sign(SpeedSign - Math.Sign(overH));
+                    //remove the overpass (ensure that Speed and the overpass are of opposite direction)
+                    move.X -= overH * ((Math.Sign(overH) == SpeedSign) ? 0 : 1);
                     //ensure that it doesn't get reversed
-                    move.X *= Math.Sign(SpeedSign + Math.Sign(move.X));
+                    move.X *= SpeedSign == Math.Sign(move.X) ? 1 : 0;
                     //remove the used up overpass
                     over.X -= og.X - move.X;
                 }
@@ -79,12 +85,12 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                     return over;
                 }
                 SpeedSign = Math.Sign(Speed.Y);
-                if (SpeedSign != 0) //determine if the overpass actually matters
+                if (SpeedSign != 0 && overV != 0) //determine if the overpass actually matters
                 {
                     //remove the overpass
-                    move.Y -= overH * Math.Sign(SpeedSign - Math.Sign(overV));
+                    move.Y -= overV * ((Math.Sign(overV) == SpeedSign) ? 0 : 1);
                     //ensure that it doesn't get reversed
-                    move.Y *= Math.Sign(SpeedSign + Math.Sign(move.Y));
+                    move.Y *= SpeedSign == Math.Sign(move.Y) ? 1 : 0;
                     //remove the used up overpass
                     over.Y -= og.Y - move.Y;
                 }
@@ -115,9 +121,10 @@ namespace Celeste.Mod.Verillia.Utils.Entities
         }
 
         public Vector2 Speed;
+        public bool AffectLiftBoostCap = true;
         public struct Particle
         {
-            public Color color;
+            public Color color = Color.White;
             public Vector2 Position;
             public Vector2 Speed;
             public Vector2 Acceleration;
@@ -153,6 +160,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                     return color;
                 Color ret = color;
                 ret.A = (byte)((color.A / 255f) * Fade * 255);
+                ret.A = 255;
                 return ret;
             }
             public bool Fading() => (RemainingLife <= FullLife / 8);
@@ -162,16 +170,34 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             }
         }
         public List<Particle> particles;
+        public const float ParticlesPerTileSecond = 0.025f;
+        public const float speedVariation = 8;
+        public const float accelVariation = 8;
+        public const float minLife = 0.5f;
+        public const float lifeVariation = 1.5f;
+        public static readonly Color[] particleColors = [Calc.HexToColor("deb754")];
+        private float remainder = 0;
+        private int Seed = 0;
 
         public Shifter(EntityData data, Vector2 offset) 
-        : this(data.Position+offset, new Vector2(data.Width, data.Height), new Vector2(data.Float("SpeedX"), data.Float("SpeedY")), data.Bool("Visible")) { }
+        : this(
+              data.Position+offset,
+              new Vector2(data.Width, data.Height),
+              new Vector2(data.Float("SpeedX"), data.Float("SpeedY")),
+              data.Bool("Visible"),
+              data.Bool("AffectSpeedCap", true)
+              ) 
+        {
 
-        public Shifter(Vector2 position, Vector2 size, Vector2 speed, bool visible = true)
+        }
+
+        public Shifter(Vector2 position, Vector2 size, Vector2 speed, bool visible = true, bool affectSpeedCap = true)
         {
             Position = position;
-            collider = new Hitbox(size.X, size.Y);
+            Collider = new Hitbox(size.X, size.Y);
             Visible = visible;
             Speed = speed;
+            particles = new List<Particle>();
         }
 
         public override void Update()
@@ -179,7 +205,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
             foreach(var actor in CollideAll<Actor>())
             {
                 if (actor.Components.Get<SpeedDistort>() is null)
-                    actor.Add(new SpeedDistort(Speed, this));
+                    actor.Add(new SpeedDistort(Speed, this, AffectLiftBoostCap));
             }
             var next = new List<Particle>();
             foreach (var p in particles)
@@ -196,6 +222,33 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                     next.Add(p);
             }
             base.Update();
+            NewParticles();
+        }
+
+        private void NewParticles()
+        {
+            float NewParticles = Engine.DeltaTime * ParticlesPerTileSecond * Collider.Width * Collider.Height / 64;
+            NewParticles += remainder;
+            int NewParticlesInt = (int)Math.Floor(NewParticles);
+            remainder = NewParticles - NewParticlesInt;
+            Calc.PushRandom(Seed);
+            for (int i = 0; i < NewParticlesInt; i++)
+            {
+                Vector2 pos = Vector2.Zero;
+                pos.X = Collider.AbsoluteLeft + Calc.Random.NextFloat(Collider.Right - Collider.Left);
+                pos.Y = Collider.AbsoluteTop + Calc.Random.NextFloat(Collider.Bottom - Collider.Top);
+                Vector2 speed = Speed;
+                speed.X += Calc.Random.NextFloat(speedVariation * 2) - speedVariation;
+                speed.Y += Calc.Random.NextFloat(speedVariation * 2) - speedVariation;
+                Vector2 accel = Vector2.Zero;
+                accel.X += Calc.Random.NextFloat(accelVariation * 2) - accelVariation;
+                accel.Y += Calc.Random.NextFloat(accelVariation * 2) - accelVariation;
+                float life = minLife + Calc.Random.NextFloat(lifeVariation);
+                Color col = Calc.Random.Choose(particleColors);
+                particles.Add(new Particle(pos, speed, accel, life, col));
+            }
+            Calc.PopRandom();
+            Seed++;
         }
 
         private bool ParticleLeave(Particle p)

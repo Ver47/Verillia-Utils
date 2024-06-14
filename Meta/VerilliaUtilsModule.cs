@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections;
-using System.Reflection;
 using Celeste.Mod.Verillia.Utils.Entities;
 using Microsoft.Xna.Framework;
+using MonoMod.Cil;
 using MonoMod.ModInterop;
 using MonoMod.RuntimeDetour;
+using Monocle;
+using Mono.Cecil.Cil;
+using System.Reflection;
 
 namespace Celeste.Mod.Verillia.Utils
 {
@@ -49,9 +52,11 @@ namespace Celeste.Mod.Verillia.Utils
             //Player methods.
             On.Celeste.Player.Die += Player_die;
             On.Celeste.PlayerCollider.Check += PlayerCollider_Check;
+            //PlayerLiftBoostHook = new ILHook(typeof(Player).GetProperty("LiftBoost", BindingFlags.Instance | BindingFlags.NonPublic).GetGetMethod(true), Player_LiftBoost_get);
 
             //Actor methods
-            ActorLiftBoostHook = new Hook(typeof(Actor).GetProperty("LiftSpeed", BindingFlags.Instance | BindingFlags.Public).GetGetMethod(), getLiftBoost);
+            ActorLiftBoostHook = new Hook(typeof(Actor).GetProperty("LiftSpeed",
+                BindingFlags.Instance | BindingFlags.Public).GetGetMethod(), getLiftBoost);
             On.Celeste.Actor.MoveHExact += MoveHExact;
             On.Celeste.Actor.MoveVExact += MoveVExact;
             On.Celeste.Actor.ctor += Actor_ctor;
@@ -78,6 +83,7 @@ namespace Celeste.Mod.Verillia.Utils
             //Player methods.
             On.Celeste.Player.Die -= Player_die;
             On.Celeste.PlayerCollider.Check -= PlayerCollider_Check;
+            //PlayerLiftBoostHook.Dispose();
 
             //Actor methods
             ActorLiftBoostHook.Dispose();
@@ -181,6 +187,51 @@ namespace Celeste.Mod.Verillia.Utils
             ext?.SetSpeed(true);
             return ret;
         }
+
+        ILHook PlayerLiftBoostHook;
+        private void Player_LiftBoost_get(ILContext il)
+        {
+            //Thanks for Viv for doing a fuck ton of this
+
+            ILCursor cursor = new(il);
+            ILCursor point1 = cursor.Clone();
+            if (!point1.TryGotoNext(MoveType.After, i => i.MatchLdcR4(250))) {
+                Logger.Log(LogLevel.Error, "VerUtils/SpeedBonus",
+                "Someone decided the remove the vertical liftspeed cap in Celeste.Player::get_LiftSpeed(). This is going to result in some bugs.");
+                return;
+            }
+            ILCursor point2 = point1.Clone();
+            if (!point2.TryGotoNext(MoveType.After, i => i.MatchLdcR4(-130))) {
+                Logger.Log(LogLevel.Error, "VerUtils/SpeedBonus",
+                "Someone decided the remove the vertical liftspeed cap in Celeste.Player::get_LiftSpeed(). This is going to result in some bugs.");
+                return;
+            }
+
+            VariableDefinition v_LiftShift = new VariableDefinition(il.Import(typeof(Vector2))); // creates a new local variable in get_LiftBoost
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.Emit(OpCodes.Call, typeof(VerilliaUtilsModule).GetMethod("get_LiftShift", (BindingFlags)40));
+            cursor.Emit(OpCodes.Stloc, v_LiftShift); // Stores a value to local V_LiftShift
+
+            //Shift the horizontal caps
+            point1.Emit(OpCodes.Ldloc, v_LiftShift);
+            point1.Emit(OpCodes.Ldfld, typeof(Vector2).GetField("X"));
+            point1.Emit(OpCodes.Add);
+
+            //Shift the vertical caps
+            point2.Emit(OpCodes.Ldloc, v_LiftShift);
+            point2.Emit(OpCodes.Ldfld, typeof(Vector2).GetField("Y"));
+            point2.Emit(OpCodes.Add);
+        }
+
+        private static Vector2 get_LiftShift(Entity e)
+        {
+            var ret = Vector2.Zero;
+            foreach(SpeedBonus c in e.Components.GetAll<SpeedBonus>())
+            {
+                ret = c.GetLiftSpeedCapShift(ret);
+            }
+            return ret;
+        }
         #endregion
 
         #region Actor Hooks
@@ -226,8 +277,13 @@ namespace Celeste.Mod.Verillia.Utils
 
         private void Actor_Update(On.Celeste.Actor.orig_Update orig, Actor self)
         {
-            orig(self);
+            foreach (SpeedBonus sped in self.Components.GetAll<SpeedBonus>())
+            {
+                //Run moving code
+                sped.DoTheMovie();
+            }
             self.GetOverpass().Reset();
+            orig(self);
         }
         #endregion
     }

@@ -12,6 +12,7 @@ namespace Celeste.Mod.Verillia.Utils
     public class SpeedBonus : Component
     {
         protected Actor actor => EntityAs<Actor>();
+        protected Player player => EntityAs<Player>();
 
         internal SpeedBonus()
             : base(true, false)
@@ -21,6 +22,10 @@ namespace Celeste.Mod.Verillia.Utils
         public override void Update()
         {
             base.Update();
+        }
+
+        internal void DoTheMovie()
+        {
             var overpass = actor.GetOverpass();
             //Record previous overpass
             int H = overpass.H;
@@ -33,7 +38,12 @@ namespace Celeste.Mod.Verillia.Utils
 
         public virtual Vector2 GetLiftSpeed(Vector2 orig)
         {
-            return Vector2.Zero;
+            return orig;
+        }
+
+        public virtual Vector2 GetLiftSpeedCapShift(Vector2 orig)
+        {
+            return orig;
         }
 
         public virtual Vector2 Move(int overH, int overV) { return new Vector2(overH, overV); }
