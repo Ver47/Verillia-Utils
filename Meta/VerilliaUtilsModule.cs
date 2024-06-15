@@ -52,7 +52,7 @@ namespace Celeste.Mod.Verillia.Utils
             //Player methods.
             On.Celeste.Player.Die += Player_die;
             On.Celeste.PlayerCollider.Check += PlayerCollider_Check;
-            //PlayerLiftBoostHook = new ILHook(typeof(Player).GetProperty("LiftBoost", BindingFlags.Instance | BindingFlags.NonPublic).GetGetMethod(true), Player_LiftBoost_get);
+            PlayerLiftBoostHook = new ILHook(typeof(Player).GetProperty("LiftBoost", BindingFlags.Instance | BindingFlags.NonPublic).GetGetMethod(true), Player_LiftBoost_get);
 
             //Actor methods
             ActorLiftBoostHook = new Hook(typeof(Actor).GetProperty("LiftSpeed",
@@ -83,7 +83,7 @@ namespace Celeste.Mod.Verillia.Utils
             //Player methods.
             On.Celeste.Player.Die -= Player_die;
             On.Celeste.PlayerCollider.Check -= PlayerCollider_Check;
-            //PlayerLiftBoostHook.Dispose();
+            PlayerLiftBoostHook.Dispose();
 
             //Actor methods
             ActorLiftBoostHook.Dispose();
@@ -191,44 +191,116 @@ namespace Celeste.Mod.Verillia.Utils
         ILHook PlayerLiftBoostHook;
         private void Player_LiftBoost_get(ILContext il)
         {
-            //Thanks for Viv for doing a fuck ton of this
+            //Thanks to Viv for laying the foundation
 
             ILCursor cursor = new(il);
-            ILCursor point1 = cursor.Clone();
-            if (!point1.TryGotoNext(MoveType.After, i => i.MatchLdcR4(250))) {
+
+            //Vertical
+            ILCursor point1a = cursor.Clone();
+            ILCursor point1b;
+            if (point1a.TryGotoNext(MoveType.Before, i => i.MatchLdcR4(250))
+                && point1a.TryGotoPrev(MoveType.After, i => i.MatchLdfld(typeof(Vector2).GetField(nameof(Vector2.X)))))
+            {
+                point1b = point1a.Clone();
+                if (!point1b.TryGotoNext(MoveType.Before,
+                    i => i.MatchStfld(typeof(Vector2).GetField("X"))))
+                {
+                    Logger.Log(LogLevel.Error, "VerUtils/SpeedBonus",
+                    "Someone decided to mess with the horizontal liftspeed capping in Celeste.Player::get_LiftSpeed(). This is going to result in some bugs.");
+                    return;
+                }
+            }
+            else
+            {
                 Logger.Log(LogLevel.Error, "VerUtils/SpeedBonus",
-                "Someone decided the remove the vertical liftspeed cap in Celeste.Player::get_LiftSpeed(). This is going to result in some bugs.");
+                    "Someone decided to remove the horizontal liftspeed cap in Celeste.Player::get_LiftSpeed(). This is going to result in some bugs.");
                 return;
             }
-            ILCursor point2 = point1.Clone();
-            if (!point2.TryGotoNext(MoveType.After, i => i.MatchLdcR4(-130))) {
+
+            //Upper Vertical
+            ILCursor point2a = point1a.Clone();
+            ILCursor point2b;
+            if (point2a.TryGotoNext(MoveType.After, i => i.MatchLdcR4(-130)))
+            {
+                point2b = point2a.Clone();
+                if (!point2b.TryGotoNext(MoveType.Before,
+                    i => i.MatchStfld(typeof(Vector2).GetField("Y"))))
+                {
+                    Logger.Log(LogLevel.Error, "VerUtils/SpeedBonus",
+                    "Someone decided to mess with the vertical liftspeed capping in Celeste.Player::get_LiftSpeed(). This is going to result in some bugs.");
+                    return;
+                }
+            }
+            else
+            {
                 Logger.Log(LogLevel.Error, "VerUtils/SpeedBonus",
-                "Someone decided the remove the vertical liftspeed cap in Celeste.Player::get_LiftSpeed(). This is going to result in some bugs.");
+                "Someone decided to remove the vertical liftspeed cap in Celeste.Player::get_LiftSpeed(). This is going to result in some bugs.");
+                return;
+            }
+
+            //Lower Vertical
+            ILCursor point3a = point1a.Clone();
+            ILCursor point3b;
+            if (point3a.TryGotoNext(MoveType.After, i => i.MatchLdcR4(0)))
+            {
+                point3b = point3a.Clone();
+                if (!point3b.TryGotoNext(MoveType.Before,
+                    i => i.MatchStfld(typeof(Vector2).GetField("Y"))))
+                {
+                    Logger.Log(LogLevel.Error, "VerUtils/SpeedBonus",
+                    "Someone decided to mess with the vertical liftspeed capping in Celeste.Player::get_LiftSpeed(). This is going to result in some bugs.");
+                    return;
+                }
+            }
+            else
+            {
+                Logger.Log(LogLevel.Error, "VerUtils/SpeedBonus",
+                "Someone decided to remove the vertical liftspeed cap in Celeste.Player::get_LiftSpeed(). This is going to result in some bugs.");
                 return;
             }
 
             VariableDefinition v_LiftShift = new VariableDefinition(il.Import(typeof(Vector2))); // creates a new local variable in get_LiftBoost
+            il.Body.Variables.Add(v_LiftShift);
             cursor.Emit(OpCodes.Ldarg_0);
-            cursor.Emit(OpCodes.Call, typeof(VerilliaUtilsModule).GetMethod("get_LiftShift", (BindingFlags)40));
+            cursor.Emit(OpCodes.Call, typeof(VerilliaUtilsModule).GetMethod("get_LiftShift",
+                BindingFlags.Public | BindingFlags.Static));
             cursor.Emit(OpCodes.Stloc, v_LiftShift); // Stores a value to local V_LiftShift
 
             //Shift the horizontal caps
-            point1.Emit(OpCodes.Ldloc, v_LiftShift);
-            point1.Emit(OpCodes.Ldfld, typeof(Vector2).GetField("X"));
-            point1.Emit(OpCodes.Add);
+            point1a.EmitLdloc(v_LiftShift);
+            point1a.EmitLdfld(typeof(Vector2).GetField(nameof(Vector2.X)));
+            point1a.Emit(OpCodes.Sub);
 
-            //Shift the vertical caps
-            point2.Emit(OpCodes.Ldloc, v_LiftShift);
-            point2.Emit(OpCodes.Ldfld, typeof(Vector2).GetField("Y"));
-            point2.Emit(OpCodes.Add);
+            point1b.EmitLdloc(v_LiftShift);
+            point1b.EmitLdfld(typeof(Vector2).GetField(nameof(Vector2.X)));
+            point1b.Emit(OpCodes.Add);
+
+            //Shift the upper vertical cap
+            point2a.EmitLdloc(v_LiftShift);
+            point2a.EmitLdfld(typeof(Vector2).GetField(nameof(Vector2.Y)));
+            point2a.Emit(OpCodes.Add);
+
+            point2b.EmitLdloc(v_LiftShift);
+            point2b.EmitLdfld(typeof(Vector2).GetField(nameof(Vector2.Y)));
+            point2b.Emit(OpCodes.Add);
+
+            //Shift the lower vertical cap
+            point3a.EmitLdloc(v_LiftShift);
+            point3a.EmitLdfld(typeof(Vector2).GetField(nameof(Vector2.Y)));
+            point3a.Emit(OpCodes.Add);
+
+            point3b.EmitLdloc(v_LiftShift);
+            point3b.EmitLdfld(typeof(Vector2).GetField(nameof(Vector2.Y)));
+            point3b.Emit(OpCodes.Add);
         }
 
-        private static Vector2 get_LiftShift(Entity e)
+        public static Vector2 get_LiftShift(Actor e)
         {
             var ret = Vector2.Zero;
+            var sped = e.LiftSpeed;
             foreach(SpeedBonus c in e.Components.GetAll<SpeedBonus>())
             {
-                ret = c.GetLiftSpeedCapShift(ret);
+                ret = c.GetLiftSpeedCapShift(ret, sped);
             }
             return ret;
         }
@@ -277,13 +349,17 @@ namespace Celeste.Mod.Verillia.Utils
 
         private void Actor_Update(On.Celeste.Actor.orig_Update orig, Actor self)
         {
-            foreach (SpeedBonus sped in self.Components.GetAll<SpeedBonus>())
+            orig(self);
+            var Components = self.Components;
+            var trueLockMode = Components.LockMode;
+            Components.LockMode = ComponentList.LockModes.Locked;
+            foreach (SpeedBonus sped in Components.GetAll<SpeedBonus>())
             {
                 //Run moving code
-                sped.DoTheMovie();
+                sped.Move();
             }
             self.GetOverpass().Reset();
-            orig(self);
+            Components.LockMode = trueLockMode;
         }
         #endregion
     }

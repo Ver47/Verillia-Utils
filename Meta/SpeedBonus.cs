@@ -19,12 +19,18 @@ namespace Celeste.Mod.Verillia.Utils
         {
         }
 
-        public override void Update()
+        public sealed override void Update()
         {
             base.Update();
         }
 
-        internal void DoTheMovie()
+        public sealed override void Render()
+        {
+            Visible = false;
+            base.Render();
+        }
+
+        internal void Move()
         {
             var overpass = actor.GetOverpass();
             //Record previous overpass
@@ -41,7 +47,7 @@ namespace Celeste.Mod.Verillia.Utils
             return orig;
         }
 
-        public virtual Vector2 GetLiftSpeedCapShift(Vector2 orig)
+        public virtual Vector2 GetLiftSpeedCapShift(Vector2 orig, Vector2 liftspeed)
         {
             return orig;
         }

@@ -73,6 +73,16 @@ namespace Celeste.Mod.Verillia.Utils
             return actor.IsRidingAnyJumpThru();
         }
 
+        public static void NaiveMoveH(this Actor actor, float amount)
+        {
+            actor.NaiveMove(Vector2.UnitX * amount);
+        }
+
+        public static void NaiveMoveV(this Actor actor, float amount)
+        {
+            actor.NaiveMove(Vector2.UnitY * amount);
+        }
+
         public static void NaiveMoveTo(this Actor actor, Vector2 goal)
         {
             Vector2 amount = Vector2.Zero;
@@ -288,5 +298,19 @@ namespace Celeste.Mod.Verillia.Utils
             public static bool OnMountain => Settings.JokeOverworld && JokeMode;
         }
         #endregion
+    }
+
+    //So I don't get fucking confused.
+    public static class Directions
+    {
+        public const int Y_Up = -1;
+        public const int Y_Down = 1;
+        public const int X_Left = -1;
+        public const int X_Right = 1;
+
+        public static readonly Vector2 Up = Vector2.UnitY * Y_Up;
+        public static readonly Vector2 Down = Vector2.UnitY * Y_Down;
+        public static readonly Vector2 Left = Vector2.UnitX * X_Left;
+        public static readonly Vector2 Right = Vector2.UnitX * X_Right;
     }
 }

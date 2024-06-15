@@ -30,80 +30,123 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                 AffectLiftBoostCap = affectLiftBoostCap;
             }
 
-            public override void Update()
-            {
-                base.Update();
-                if (!Collide.Check(actor, source))
-                {
-                    RemoveSelf();
-                }
-            }
-
             public override Vector2 GetLiftSpeed(Vector2 orig)
             {
                 return orig-Speed;
             }
 
-            public override Vector2 GetLiftSpeedCapShift(Vector2 orig)
+            public override Vector2 GetLiftSpeedCapShift(Vector2 orig, Vector2 whatever)
             {
                 return orig - Speed;
             }
 
             public override Vector2 Move(int overH, int overV)
             {
-                if (actor.IsRidingAnySolidOrJumpThru())
+                if (actor.IsRidingAnySolidOrJumpThru()
+                    || actor.TreatNaive)
+                {
+                    if (!Collide.Check(actor, source))
+                        RemoveSelf();
                     return base.Move(overH, overV);
-                if (actor.TreatNaive)
-                    return base.Move(overH, overV);
-                if (!Collide.Check(actor, source))
-                    return base.Move(overH, overV);
+                }
                 // consider move
                 Vector2 move = Speed * Engine.DeltaTime;
                 Vector2 og = move;
                 Vector2 over = new Vector2(overH, overV);
+
+                Vector2 origPos = actor.ExactPosition;
+                Vector2 origOver = over;
+
                 int SpeedSign = Math.Sign(Speed.X);
-                if (overH != 0 && SpeedSign != 0) //determine if the overpass actually matters
+                if (SpeedSign != 0)
                 {
-                    //remove the overpass (ensure that Speed and the overpass are of opposite direction)
-                    move.X -= overH * ((Math.Sign(overH) == SpeedSign) ? 0 : 1);
-                    //ensure that it doesn't get reversed
-                    move.X *= SpeedSign == Math.Sign(move.X) ? 1 : 0;
-                    //remove the used up overpass
-                    over.X -= og.X - move.X;
-                }
-                actor.MoveH(move.X);
-                if (!Collide.Check(actor, source))
-                {
-                    if (actor.Position.X + actor.Collider.Left >= source.Position.X + source.Collider.Right)
+                    if (overH != 0) //determine if the overpass actually matters
                     {
-                        actor.NaiveMoveToX(source.Position.X + source.Collider.Right - actor.Collider.Left);
+                        //remove the overpass (ensure that Speed and the overpass are of opposite direction)
+                        move.X -= overH * ((Math.Sign(overH) == SpeedSign) ? 0 : 1);
+                        //ensure that it doesn't get reversed
+                        move.X *= SpeedSign == Math.Sign(move.X) ? 1 : 0;
+                        //remove the used up overpass
+                        over.X -= og.X - move.X;
                     }
+                    if (SpeedSign == Directions.X_Left?
+                        actor.Collider.AbsoluteLeft >= source.Collider.AbsoluteRight :
+                        actor.Collider.AbsoluteRight <= source.Collider.AbsoluteLeft)
+                        actor.NaiveMoveH(move.X);
                     else
+                        actor.MoveH(move.X);
+                    if (!Collide.Check(actor, source))
                     {
-                        actor.NaiveMoveToX(source.Position.X + source.Collider.Left - actor.Collider.Right);
+                        if (actor.Collider.AbsoluteLeft >= source.Collider.AbsoluteRight)
+                        {
+                            if (SpeedSign == Directions.X_Right)
+                            {
+                                actor.NaiveMoveToX(source.Collider.AbsoluteRight - actor.Collider.Left);
+                                RemoveSelf();
+                                return over;
+                            }
+                            over.X = origOver.X;
+                            actor.NaiveMoveToX(origPos.X);
+                        }
+                        else if (actor.Collider.AbsoluteRight <= source.Collider.AbsoluteLeft)
+                        {
+                            if (SpeedSign == Directions.X_Left)
+                            {
+                                actor.NaiveMoveToX(source.Collider.AbsoluteLeft - actor.Collider.Right);
+                                RemoveSelf();
+                                return over;
+                            }
+                            over.X = origOver.X;
+                            actor.NaiveMoveToX(origPos.X);
+                        }
+                        RemoveSelf();
                     }
-                    return over;
                 }
                 SpeedSign = Math.Sign(Speed.Y);
-                if (SpeedSign != 0 && overV != 0) //determine if the overpass actually matters
+                if (SpeedSign != 0)
                 {
-                    //remove the overpass
-                    move.Y -= overV * ((Math.Sign(overV) == SpeedSign) ? 0 : 1);
-                    //ensure that it doesn't get reversed
-                    move.Y *= SpeedSign == Math.Sign(move.Y) ? 1 : 0;
-                    //remove the used up overpass
-                    over.Y -= og.Y - move.Y;
-                }
-                actor.MoveV(move.Y);
-                if (!Collide.Check(actor, source))
-                    if (actor.Position.Y + actor.Collider.Top >= source.Position.Y + source.Collider.Bottom)
+                    if (overV != 0) //determine if the overpass actually matters
                     {
-                        actor.NaiveMoveToY(source.Position.Y + source.Collider.Bottom - actor.Collider.Top);
+                        //remove the overpass
+                        move.Y -= overV * ((Math.Sign(overV) == SpeedSign) ? 0 : 1);
+                        //ensure that it doesn't get reversed
+                        move.Y *= SpeedSign == Math.Sign(move.Y) ? 1 : 0;
+                        //remove the used up overpass
+                        over.Y -= og.Y - move.Y;
                     }
+                    if (SpeedSign == Directions.Y_Up ?
+                        actor.Collider.AbsoluteTop >= source.Collider.AbsoluteBottom :
+                        actor.Collider.AbsoluteBottom <= source.Collider.AbsoluteTop)
+                        actor.NaiveMoveV(move.Y);
                     else
+                        actor.MoveV(move.Y);
+                    if (!Collide.Check(actor, source))
                     {
-                        actor.NaiveMoveToY(source.Position.Y + source.Collider.Top - actor.Collider.Bottom);
+                        if (actor.Collider.AbsoluteTop >= source.Collider.AbsoluteBottom)
+                        {
+                            if (SpeedSign == Directions.Y_Down)
+                            {
+                                actor.NaiveMoveToY(source.Collider.AbsoluteBottom - actor.Collider.Top);
+                                RemoveSelf();
+                                return over;
+                            }
+                            over.Y = origOver.Y;
+                            actor.NaiveMoveToY(origPos.Y);
+                        }
+                        else if (actor.Collider.AbsoluteBottom <= source.Collider.AbsoluteTop)
+                        {
+                            if (SpeedSign == Directions.Y_Up)
+                            {
+                                actor.NaiveMoveToY(source.Collider.AbsoluteTop - actor.Collider.Bottom);
+                                RemoveSelf();
+                                return over;
+                            }
+                            over.Y = origOver.Y;
+                            actor.NaiveMoveToY(origPos.Y);
+                        }
+                        RemoveSelf();
                     }
+                }
                 return over;
             }
         }
