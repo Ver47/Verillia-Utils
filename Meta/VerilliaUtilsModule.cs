@@ -62,6 +62,14 @@ namespace Celeste.Mod.Verillia.Utils
             On.Celeste.Actor.ctor += Actor_ctor;
             On.Celeste.Actor.Update += Actor_Update;
 
+            //Entitylist methods
+            IL.Monocle.EntityList.Update += EntityList_Update;
+            IL.Monocle.EntityList.Render += EntityList_Render;
+            IL.Monocle.EntityList.RenderOnly += EntityList_Render;
+            IL.Monocle.EntityList.RenderOnlyFullMatch += EntityList_Render;
+            IL.Monocle.EntityList.RenderExcept += EntityList_Render;
+            IL.Monocle.EntityList.DebugRender += EntityList_DebugRender;
+
             //Custom Event Conditions
             EventFirer.Hooks.Init();
         }
@@ -91,6 +99,14 @@ namespace Celeste.Mod.Verillia.Utils
             On.Celeste.Actor.MoveVExact -= MoveVExact;
             On.Celeste.Actor.ctor -= Actor_ctor;
             On.Celeste.Actor.Update -= Actor_Update;
+
+            //Entitylist methods
+            IL.Monocle.EntityList.Update -= EntityList_Update;
+            IL.Monocle.EntityList.Render -= EntityList_Render;
+            IL.Monocle.EntityList.RenderOnly -= EntityList_Render;
+            IL.Monocle.EntityList.RenderOnlyFullMatch -= EntityList_Render;
+            IL.Monocle.EntityList.RenderExcept -= EntityList_Render;
+            IL.Monocle.EntityList.DebugRender -= EntityList_DebugRender;
 
             //Custom Event Conditions
             EventFirer.Hooks.DeInit();
@@ -361,6 +377,42 @@ namespace Celeste.Mod.Verillia.Utils
             self.GetOverpass().Reset();
             Components.LockMode = trueLockMode;
         }
+        #endregion
+
+        #region Entitylist Hooks
+
+        private void EntityList_Update(ILContext il)
+        {
+            ApplyBeforeAfter<Entity>(il, nameof(Entity.Update), 1, VerUtils.PreUpdate, VerUtils.PostUpdate);
+        }
+
+        private void EntityList_Render(ILContext il)
+        {
+            ApplyBeforeAfter<Entity>(il, nameof(Entity.Render), 1, VerUtils.PreRender, VerUtils.PostRender);
+        }
+
+        ILHook entityList_DebugRender;
+        private void EntityList_DebugRender(ILContext il)
+        {
+            ApplyBeforeAfter<Entity>(il, nameof(Entity.DebugRender), 1, VerUtils.PreRender, VerUtils.PostRender);
+        }
+
+        private void ApplyBeforeAfter<T>(ILContext il, string functionName, int index, Action<T> Before, Action<T> After)
+        {
+            var before = new ILCursor(il);
+            var after = before.Clone();
+            while (before.TryGotoNext(MoveType.Before, i => i.MatchCallvirt<T>(functionName)))
+            {
+                before.EmitDelegate(Before);
+                before.EmitLdloc(index);
+            }
+            while (after.TryGotoNext(MoveType.After, i => i.MatchCallvirt<T>(functionName)))
+            {
+                after.EmitLdloc(index);
+                after.EmitDelegate(After);
+            }
+        }
+
         #endregion
     }
 }

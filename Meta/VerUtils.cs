@@ -1,4 +1,5 @@
 ﻿using Celeste.Mod.Verillia.Utils;
+using Celeste.Mod.Verillia.Utils.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
 using System;
@@ -229,6 +230,58 @@ namespace Celeste.Mod.Verillia.Utils
         {
             curve.RenderBetter(Vector2.Zero, color, resolution, thickness);
         }
+        #endregion
+
+        #region Entity
+
+        public static void PreUpdate(this Entity entity)
+        {
+            var Components = entity.Components;
+            var trueLockMode = Components.LockMode;
+            Components.LockMode = ComponentList.LockModes.Locked;
+            foreach (ComplexComponent component in Components.GetAll<ComplexComponent>())
+            {
+                component.PreUpdate();
+            }
+            Components.LockMode = trueLockMode;
+        }
+
+        public static void PostUpdate(this Entity entity)
+        {
+            var Components = entity.Components;
+            var trueLockMode = Components.LockMode;
+            Components.LockMode = ComponentList.LockModes.Locked;
+            foreach (ComplexComponent component in Components.GetAll<ComplexComponent>())
+            {
+                component.PostUpdate();
+            }
+            Components.LockMode = trueLockMode;
+        }
+
+        public static void PreRender(this Entity entity)
+        {
+            var Components = entity.Components;
+            var trueLockMode = Components.LockMode;
+            Components.LockMode = ComponentList.LockModes.Locked;
+            foreach (ComplexComponent component in Components.GetAll<ComplexComponent>())
+            {
+                component.PreRender();
+            }
+            Components.LockMode = trueLockMode;
+        }
+
+        public static void PostRender(this Entity entity)
+        {
+            var Components = entity.Components;
+            var trueLockMode = Components.LockMode;
+            Components.LockMode = ComponentList.LockModes.Locked;
+            foreach (ComplexComponent component in Components.GetAll<ComplexComponent>())
+            {
+                component.PostRender();
+            }
+            Components.LockMode = trueLockMode;
+        }
+
         #endregion
 
         #endregion
