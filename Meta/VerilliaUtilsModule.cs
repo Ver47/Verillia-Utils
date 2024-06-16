@@ -203,7 +203,7 @@ namespace Celeste.Mod.Verillia.Utils
             {
                 point1b = point1a.Clone();
                 if (!point1b.TryGotoNext(MoveType.Before,
-                    i => i.MatchStfld(typeof(Vector2).GetField("X"))))
+                    i => i.MatchStfld(typeof(Vector2).GetField(nameof(Vector2.X)))))
                 {
                     Logger.Log(LogLevel.Error, "VerUtils/SpeedBonus",
                     "Someone decided to mess with the horizontal liftspeed capping in Celeste.Player::get_LiftSpeed(). This is going to result in some bugs.");
@@ -224,7 +224,7 @@ namespace Celeste.Mod.Verillia.Utils
             {
                 point2b = point2a.Clone();
                 if (!point2b.TryGotoNext(MoveType.Before,
-                    i => i.MatchStfld(typeof(Vector2).GetField("Y"))))
+                    i => i.MatchStfld(typeof(Vector2).GetField(nameof(Vector2.Y)))))
                 {
                     Logger.Log(LogLevel.Error, "VerUtils/SpeedBonus",
                     "Someone decided to mess with the vertical liftspeed capping in Celeste.Player::get_LiftSpeed(). This is going to result in some bugs.");
@@ -245,7 +245,7 @@ namespace Celeste.Mod.Verillia.Utils
             {
                 point3b = point3a.Clone();
                 if (!point3b.TryGotoNext(MoveType.Before,
-                    i => i.MatchStfld(typeof(Vector2).GetField("Y"))))
+                    i => i.MatchStfld(typeof(Vector2).GetField(nameof(Vector2.Y)))))
                 {
                     Logger.Log(LogLevel.Error, "VerUtils/SpeedBonus",
                     "Someone decided to mess with the vertical liftspeed capping in Celeste.Player::get_LiftSpeed(). This is going to result in some bugs.");
