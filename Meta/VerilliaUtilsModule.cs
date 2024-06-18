@@ -23,9 +23,12 @@ namespace Celeste.Mod.Verillia.Utils
         public override Type SessionType => typeof(VerilliaUtilsSession);
         public static VerilliaUtilsSession Session => (VerilliaUtilsSession)Instance._Session;
 
+        private HookPack hooks = new();
+
         public VerilliaUtilsModule()
         {
             Instance = this;
+            hooks.LogName = ModName;
 #if DEBUG
             // debug builds use verbose logging
             Logger.SetLogLevel(ModName, LogLevel.Debug);
@@ -37,38 +40,52 @@ namespace Celeste.Mod.Verillia.Utils
 
         public override void Load()
         {
+            Type t;
+
             //Template stuff
-            On.Celeste.LevelLoader.ctor += LevelLoader_ctor;
-            On.Celeste.OverworldLoader.ctor += OverworldLoader_ctor;
+            t = typeof(On.Celeste.LevelLoader);
+            hooks.Add(t, nameof(On.Celeste.LevelLoader.ctor), LevelLoader_ctor);
 
-            //Player creation
-            On.Celeste.Player.ctor += Player_ctor;
-            Everest.Events.Player.OnRegisterStates += Player_addStates;
+            t = typeof(On.Celeste.OverworldLoader);
+            hooks.Add(t, nameof(On.Celeste.OverworldLoader.ctor), OverworldLoader_ctor);
 
-            //Player update and render
-            On.Celeste.Player.Update += Player_Update;
-            On.Celeste.Player.Render += Player_Render;
+            //Player
+            t = typeof(On.Celeste.Player);
+            hooks.Add(t, nameof(On.Celeste.Player.ctor), Player_ctor);
+            hooks.Add(t, nameof(On.Celeste.Player.Update), Player_Update);
+            hooks.Add(t, nameof(On.Celeste.Player.Render), Player_Render);
+            hooks.Add(t, nameof(On.Celeste.Player.Die), Player_die);
 
-            //Player methods.
-            On.Celeste.Player.Die += Player_die;
-            On.Celeste.PlayerCollider.Check += PlayerCollider_Check;
-            PlayerLiftBoostHook = new ILHook(typeof(Player).GetProperty("LiftBoost", BindingFlags.Instance | BindingFlags.NonPublic).GetGetMethod(true), Player_LiftBoost_get);
+            t = typeof(Everest.Events.Player);
+            hooks.Add(t, nameof(Everest.Events.Player.OnRegisterStates), Player_addStates);
 
-            //Actor methods
-            ActorLiftBoostHook = new Hook(typeof(Actor).GetProperty("LiftSpeed",
-                BindingFlags.Instance | BindingFlags.Public).GetGetMethod(), getLiftBoost);
-            On.Celeste.Actor.MoveHExact += MoveHExact;
-            On.Celeste.Actor.MoveVExact += MoveVExact;
-            On.Celeste.Actor.ctor += Actor_ctor;
-            On.Celeste.Actor.Update += Actor_Update;
+            t = typeof(On.Celeste.PlayerCollider);
+            hooks.Add(t, nameof(On.Celeste.PlayerCollider.Check), PlayerCollider_Check);
+
+            hooks.Add(new ILHook(typeof(Player).GetProperty(
+                "LiftBoost",
+                BindingFlags.Instance | BindingFlags.NonPublic).GetGetMethod(true),
+                Player_LiftBoost_get));
+
+            //Actor
+            hooks.Add(new Hook(typeof(Actor).GetProperty(
+                "LiftSpeed",
+                BindingFlags.Instance | BindingFlags.Public).GetGetMethod(),
+                getLiftBoost));
+
+            t = typeof(On.Celeste.Actor);
+            hooks.Add(t, nameof(On.Celeste.Actor.MoveHExact), MoveHExact);
+            hooks.Add(t, nameof(On.Celeste.Actor.MoveVExact), MoveVExact);
+            hooks.Add(t, nameof(On.Celeste.Actor.ctor), Actor_ctor);
+            hooks.Add(t, nameof(On.Celeste.Actor.Update), Actor_Update);
 
             //Entitylist methods
-            IL.Monocle.EntityList.Update += EntityList_Update;
-            IL.Monocle.EntityList.Render += EntityList_Render;
-            IL.Monocle.EntityList.RenderOnly += EntityList_Render;
-            IL.Monocle.EntityList.RenderOnlyFullMatch += EntityList_Render;
-            IL.Monocle.EntityList.RenderExcept += EntityList_Render;
-            IL.Monocle.EntityList.DebugRender += EntityList_DebugRender;
+            t = typeof(IL.Monocle.EntityList);
+            hooks.Add(t, nameof(IL.Monocle.EntityList.Update), EntityList_Update);
+            hooks.Add(t, nameof(IL.Monocle.EntityList.Render), EntityList_Render);
+            hooks.Add(t, nameof(IL.Monocle.EntityList.RenderOnly), EntityList_Render);
+            hooks.Add(t, nameof(IL.Monocle.EntityList.RenderOnlyFullMatch), EntityList_Render);
+            hooks.Add(t, nameof(IL.Monocle.EntityList.RenderExcept), EntityList_Render);
 
             //Custom Event Conditions
             EventFirer.Hooks.Init();
@@ -76,37 +93,7 @@ namespace Celeste.Mod.Verillia.Utils
 
         public override void Unload()
         {
-            //Template stuff
-            On.Celeste.LevelLoader.ctor -= LevelLoader_ctor;
-            On.Celeste.OverworldLoader.ctor -= OverworldLoader_ctor;
-
-            //Player creation
-            On.Celeste.Player.ctor -= Player_ctor;
-            Everest.Events.Player.OnRegisterStates -= Player_addStates;
-
-            //Player update and render
-            On.Celeste.Player.Update -= Player_Update;
-            On.Celeste.Player.Render -= Player_Render;
-
-            //Player methods.
-            On.Celeste.Player.Die -= Player_die;
-            On.Celeste.PlayerCollider.Check -= PlayerCollider_Check;
-            PlayerLiftBoostHook.Dispose();
-
-            //Actor methods
-            ActorLiftBoostHook.Dispose();
-            On.Celeste.Actor.MoveHExact -= MoveHExact;
-            On.Celeste.Actor.MoveVExact -= MoveVExact;
-            On.Celeste.Actor.ctor -= Actor_ctor;
-            On.Celeste.Actor.Update -= Actor_Update;
-
-            //Entitylist methods
-            IL.Monocle.EntityList.Update -= EntityList_Update;
-            IL.Monocle.EntityList.Render -= EntityList_Render;
-            IL.Monocle.EntityList.RenderOnly -= EntityList_Render;
-            IL.Monocle.EntityList.RenderOnlyFullMatch -= EntityList_Render;
-            IL.Monocle.EntityList.RenderExcept -= EntityList_Render;
-            IL.Monocle.EntityList.DebugRender -= EntityList_DebugRender;
+            hooks.Dispose();
 
             //Custom Event Conditions
             EventFirer.Hooks.DeInit();
@@ -204,7 +191,6 @@ namespace Celeste.Mod.Verillia.Utils
             return ret;
         }
 
-        ILHook PlayerLiftBoostHook;
         private void Player_LiftBoost_get(ILContext il)
         {
             //Thanks to Viv for laying the foundation
@@ -323,7 +309,6 @@ namespace Celeste.Mod.Verillia.Utils
         #endregion
 
         #region Actor Hooks
-        Hook ActorLiftBoostHook;
         private delegate Vector2 orig_get_LiftSpeed(Actor self);
         private Vector2 getLiftBoost(orig_get_LiftSpeed orig, Actor self)
         {
@@ -391,25 +376,16 @@ namespace Celeste.Mod.Verillia.Utils
             ApplyBeforeAfter<Entity>(il, nameof(Entity.Render), 1, VerUtils.PreRender, VerUtils.PostRender);
         }
 
-        ILHook entityList_DebugRender;
-        private void EntityList_DebugRender(ILContext il)
-        {
-            ApplyBeforeAfter<Entity>(il, nameof(Entity.DebugRender), 1, VerUtils.PreRender, VerUtils.PostRender);
-        }
-
         private void ApplyBeforeAfter<T>(ILContext il, string functionName, int index, Action<T> Before, Action<T> After)
         {
-            var before = new ILCursor(il);
-            var after = before.Clone();
-            while (before.TryGotoNext(MoveType.Before, i => i.MatchCallvirt<T>(functionName)))
+            var cursor = new ILCursor(il);
+            while (cursor.TryGotoNext(MoveType.Before, i => i.MatchCallvirt<T>(functionName)))
             {
-                before.EmitDelegate(Before);
-                before.EmitLdloc(index);
-            }
-            while (after.TryGotoNext(MoveType.After, i => i.MatchCallvirt<T>(functionName)))
-            {
-                after.EmitLdloc(index);
-                after.EmitDelegate(After);
+                cursor.EmitDelegate(Before);
+                cursor.EmitLdloc(index);
+                cursor.GotoNext(MoveType.After, i => true); // The function
+                cursor.EmitLdloc(index);
+                cursor.EmitDelegate(After);
             }
         }
 

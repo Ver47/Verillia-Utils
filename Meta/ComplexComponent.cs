@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using Celeste.Pico8;
 using Monocle;
 
-namespace Celeste.Mod.Verillia.Utils.Entities
+namespace Celeste.Mod.Verillia.Utils
 {
     public class ComplexComponent : Component
     {
+        private static double i = 0;
+
         public ComplexComponent(bool active, bool visible)
             : base(active, visible) { }
 
