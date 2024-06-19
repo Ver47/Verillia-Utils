@@ -5,6 +5,7 @@ using Monocle;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,11 +40,11 @@ namespace Celeste.Mod.Verillia.Utils
 
         #region Actor
         //For Ease of getting overpass component
-        public static Overpass GetOverpass(this Actor actor)
+        public static CounterMovement GetCounterMovement(this Actor actor)
         {
-            Overpass ret = actor.Components.Get<Overpass>();
+            CounterMovement ret = actor.Components.Get<CounterMovement>();
             if (ret is null)
-                actor.Add(ret = new Overpass());
+                actor.Add(ret = new CounterMovement());
             return ret;
         }
 
@@ -233,7 +234,6 @@ namespace Celeste.Mod.Verillia.Utils
         #endregion
 
         #region Entity
-
         public static void PreUpdate(this Entity entity)
         {
             var Components = entity.Components;
@@ -241,6 +241,12 @@ namespace Celeste.Mod.Verillia.Utils
             Components.LockMode = ComponentList.LockModes.Locked;
             foreach (ComplexComponent component in Components.GetAll<ComplexComponent>())
             {
+                if (!component.Active)
+                {
+                    component.WasActive = false;
+                    continue;
+                }
+                component.WasActive = true;
                 component.PreUpdate();
             }
             Components.LockMode = trueLockMode;
@@ -253,6 +259,8 @@ namespace Celeste.Mod.Verillia.Utils
             Components.LockMode = ComponentList.LockModes.Locked;
             foreach (ComplexComponent component in Components.GetAll<ComplexComponent>())
             {
+                if (!component.WasActive)
+                    continue;
                 component.PostUpdate();
             }
             Components.LockMode = trueLockMode;
@@ -265,6 +273,12 @@ namespace Celeste.Mod.Verillia.Utils
             Components.LockMode = ComponentList.LockModes.Locked;
             foreach (ComplexComponent component in Components.GetAll<ComplexComponent>())
             {
+                if (!component.Visible)
+                {
+                    component.WasVisible = false;
+                    continue;
+                }
+                component.WasVisible = true;
                 component.PreRender();
             }
             Components.LockMode = trueLockMode;
@@ -277,14 +291,145 @@ namespace Celeste.Mod.Verillia.Utils
             Components.LockMode = ComponentList.LockModes.Locked;
             foreach (ComplexComponent component in Components.GetAll<ComplexComponent>())
             {
+                if (!component.WasVisible)
+                    continue;
                 component.PostRender();
             }
             Components.LockMode = trueLockMode;
         }
-
         #endregion
 
         #region IL
+        #endregion
+
+        #region Type
+        public static FieldInfo GetFieldInheritance(this Type type, string Name)
+        {
+            for (var Current = type; Current is not null; Current = Current.BaseType)
+            {
+                var ret = Current.GetField(Name);
+                if (ret is not null)
+                    return ret;
+            }
+            return null;
+        }
+
+        public static FieldInfo GetFieldInheritance(this Type type, string Name, BindingFlags bindingAttr)
+        {
+            for (var Current = type; Current is not null; Current = Current.BaseType)
+            {
+                var ret = Current.GetField(Name, bindingAttr);
+                if (ret is not null)
+                    return ret;
+            }
+            return null;
+        }
+
+        public static PropertyInfo GetPropertyInheritance(this Type type, string Name)
+        {
+            for (var Current = type; Current is not null; Current = Current.BaseType)
+            {
+                var ret = Current.GetProperty(Name);
+                if (ret is not null)
+                    return ret;
+            }
+            return null;
+        }
+
+        public static PropertyInfo GetPropertyInheritance(this Type type, string Name, BindingFlags bindingAttr)
+        {
+            for (var Current = type; Current is not null; Current = Current.BaseType)
+            {
+                var ret = Current.GetProperty(Name, bindingAttr);
+                if (ret is not null)
+                    return ret;
+            }
+            return null;
+        }
+
+        public static MemberInfo GetFieldOrPropertyInheritance(this Type type, string Name)
+        {
+            for (var Current = type; Current is not null; Current = Current.BaseType)
+            {
+                MemberInfo ret = Current.GetProperty(Name);
+                if (ret is not null)
+                    return ret;
+                ret = Current.GetField(Name);
+                if (ret is not null)
+                    return ret;
+            }
+            return null;
+        }
+
+        public static MemberInfo GetFieldOrPropertyInheritance(this Type type, string Name, BindingFlags bindingAttr)
+        {
+            for (var Current = type; Current is not null; Current = Current.BaseType)
+            {
+                MemberInfo ret = Current.GetProperty(Name, bindingAttr);
+                if (ret is not null)
+                    return ret;
+                ret = Current.GetField(Name, bindingAttr);
+                if (ret is not null)
+                    return ret;
+            }
+            return null;
+        }
+
+        public static object GetValueOfMember<From>(this From obj, string Name)
+        {
+            var info = typeof(From).GetFieldOrPropertyInheritance(Name);
+            if (info is PropertyInfo property)
+            {
+                return property.GetValue(obj, null);
+            }
+            if (info is FieldInfo field)
+            {
+                return field.GetValue(obj);
+            }
+            return null;
+        }
+
+        public static object GetValueOfMember<From>(this From obj, string Name, BindingFlags bindingAttr)
+        {
+            var info = typeof(From).GetFieldOrPropertyInheritance(Name, bindingAttr);
+            if (info is PropertyInfo property)
+            {
+                return property.GetValue(obj, null);
+            }
+            if (info is FieldInfo field)
+            {
+                return field.GetValue(obj);
+            }
+            return null;
+        }
+
+        public static object GetValueOfMember(this object obj, string Name)
+        {
+            var info = obj.GetType().GetFieldOrPropertyInheritance(Name);
+            if (info is PropertyInfo property)
+            {
+                return property.GetValue(obj, null);
+            }
+            if (info is FieldInfo field)
+            {
+                return field.GetValue(obj);
+            }
+            return null;
+        }
+
+        public static object GetValueOfMember(this object obj, string Name, BindingFlags bindingAttr)
+        {
+            var info = obj.GetType().GetFieldOrPropertyInheritance(Name, bindingAttr);
+            if (info is PropertyInfo property)
+            {
+                return property.GetValue(obj, null);
+            }
+            if (info is FieldInfo field)
+            {
+                return field.GetValue(obj);
+            }
+            return null;
+        }
         #endregion
 
         #endregion

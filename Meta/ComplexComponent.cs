@@ -12,6 +12,9 @@ namespace Celeste.Mod.Verillia.Utils
     {
         private static double i = 0;
 
+        public bool WasActive { get; internal set; }
+        public bool WasVisible { get; internal set; }
+
         public ComplexComponent(bool active, bool visible)
             : base(active, visible) { }
 

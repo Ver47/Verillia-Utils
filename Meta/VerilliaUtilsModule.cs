@@ -324,7 +324,7 @@ namespace Celeste.Mod.Verillia.Utils
             bool ret = orig(self, moveH, onCollide, pusher);
             if (ret || pusher is not null)
                 return ret;
-            var over = self.GetOverpass();
+            var over = self.GetCounterMovement();
             if (over.Active)
                 over.H += goalpos - (int)self.Position.X;
             return ret;
@@ -336,7 +336,7 @@ namespace Celeste.Mod.Verillia.Utils
             bool ret = orig(self, moveV, onCollide, pusher);
             if (ret || pusher is not null)
                 return ret;
-            var over = self.GetOverpass();
+            var over = self.GetCounterMovement();
             if (over.Active)
                 over.V += goalpos - (int)self.Position.Y;
             return ret;
@@ -345,7 +345,7 @@ namespace Celeste.Mod.Verillia.Utils
         private void Actor_ctor(On.Celeste.Actor.orig_ctor orig, Actor self, Vector2 pos)
         {
             orig(self, pos);
-            self.GetOverpass();
+            self.GetCounterMovement();
         }
 
         private void Actor_Update(On.Celeste.Actor.orig_Update orig, Actor self)
@@ -359,7 +359,7 @@ namespace Celeste.Mod.Verillia.Utils
                 //Run moving code
                 sped.Move();
             }
-            self.GetOverpass().Reset();
+            self.GetCounterMovement().Reset();
             Components.LockMode = trueLockMode;
         }
         #endregion

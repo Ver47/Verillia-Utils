@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework;
 
 namespace Celeste.Mod.Verillia.Utils
 {
-    public class SpeedBonus : Component
+    public class SpeedBonus : ComplexComponent
     {
         protected Actor actor => EntityAs<Actor>();
         protected Player player => EntityAs<Player>();
@@ -32,7 +32,7 @@ namespace Celeste.Mod.Verillia.Utils
 
         internal void Move()
         {
-            var overpass = actor.GetOverpass();
+            var overpass = actor.GetCounterMovement();
             //Record previous overpass
             int H = overpass.H;
             int V = overpass.V;
