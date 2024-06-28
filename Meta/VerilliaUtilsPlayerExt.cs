@@ -178,6 +178,7 @@ namespace Celeste.Mod.Verillia.Utils
         {
             //Disable collision
             player.TreatNaive = true;
+            player.AllowPushing = false;
         }
 
         public int RailBoostUpdate() => StRailBoost;
@@ -191,6 +192,7 @@ namespace Celeste.Mod.Verillia.Utils
             player.TreatNaive = false;
             manualMovement = false;
             Invincible = false;
+            player.AllowPushing = true;
         }
 
         public IEnumerator RailBoostCoroutine()
@@ -316,9 +318,6 @@ namespace Celeste.Mod.Verillia.Utils
                     // Just a bit paranoid
                     NextRailBooster = null;
 
-                    //prepare for whatever
-                    player.TreatNaive = false;
-                    manualMovement = false;
                     //Shock it
                     Celeste.Freeze(0.05f);
                     yield break;

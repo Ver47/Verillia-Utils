@@ -39,7 +39,7 @@ namespace Celeste.Mod.Verillia.Utils
         #endregion
 
         #region Actor
-        //For Ease of getting overpass component
+        //For ease of getting countermovement component
         public static CounterMovement GetCounterMovement(this Actor actor)
         {
             CounterMovement ret = actor.Components.Get<CounterMovement>();
@@ -48,6 +48,7 @@ namespace Celeste.Mod.Verillia.Utils
             return ret;
         }
 
+        #region Riding
         public static bool IsRidingAnySolid(this Actor actor)
         {
             foreach (Solid c in actor.Scene.Tracker.GetEntities<Solid>())
@@ -74,7 +75,9 @@ namespace Celeste.Mod.Verillia.Utils
                 return true;
             return actor.IsRidingAnyJumpThru();
         }
+        #endregion
 
+        #region NaiveMove
         public static void NaiveMoveH(this Actor actor, float amount)
         {
             actor.NaiveMove(Vector2.UnitX * amount);
@@ -103,6 +106,180 @@ namespace Celeste.Mod.Verillia.Utils
             actor.NaiveMoveTo(new Vector2(actor.ExactPosition.X, goal));
         }
 
+        public static void NaiveMoveTowards(this Actor actor, Vector2 goal, float maxAmount)
+        {
+            Vector2 to = Calc.Approach(actor.ExactPosition, goal, maxAmount);
+            actor.NaiveMoveTo(to);
+        }
+
+        public static void NaiveMoveTowardsY(this Actor actor, float targetY, float maxAmount, Collision onCollide = null)
+        {
+            float toY = Calc.Approach(actor.ExactPosition.Y, targetY, maxAmount);
+            actor.NaiveMoveToY(toY);
+        }
+
+        public static void NaiveMoveTowardsX(this Actor actor, float targetX, float maxAmount, Collision onCollide = null)
+        {
+            float toX = Calc.Approach(actor.ExactPosition.X, targetX, maxAmount);
+            actor.NaiveMoveToX(toX);
+        }
+        #endregion
+
+        #region MoveUntil
+        public static bool MoveHExactUntil(this Actor actor, int moveH, Func<bool> stopCondition, Collision onCollide = null, Solid pusher = null)
+        {
+            Vector2 targetPosition = actor.Position + Vector2.UnitX * moveH;
+            int num = Math.Sign(moveH);
+            int num2 = 0;
+            while (moveH != 0 && !stopCondition())
+            {
+                Solid solid = actor.CollideFirst<Solid>(actor.Position + Vector2.UnitX * num);
+                if (solid != null)
+                {
+                    actor.movementCounter.X = 0f;
+                    onCollide?.Invoke(new CollisionData
+                    {
+                        Direction = Vector2.UnitX * num,
+                        Moved = Vector2.UnitX * num2,
+                        TargetPosition = targetPosition,
+                        Hit = solid,
+                        Pusher = pusher
+                    });
+                    return true;
+                }
+                num2 += num;
+                moveH -= num;
+                actor.X += num;
+            }
+            return false;
+        }
+
+        public static bool MoveVExactUntil(this Actor actor, int moveV, Func<bool> stopCondition, Collision onCollide = null, Solid pusher = null)
+        {
+            Vector2 targetPosition = actor.Position + Vector2.UnitY * moveV;
+            int num = Math.Sign(moveV);
+            int num2 = 0;
+            while (moveV != 0 && !stopCondition())
+            {
+                Solid solid = actor.CollideFirst<Solid>(actor.Position + Vector2.UnitY * num);
+                if (solid != null)
+                {
+                    actor.movementCounter.X = 0f;
+                    onCollide?.Invoke(new CollisionData
+                    {
+                        Direction = Vector2.UnitY * num,
+                        Moved = Vector2.UnitY * num2,
+                        TargetPosition = targetPosition,
+                        Hit = solid,
+                        Pusher = pusher
+                    });
+                    return true;
+                }
+                num2 += num;
+                moveV -= num;
+                actor.X += num;
+            }
+            return false;
+        }
+
+        public static bool MoveVUntil(this Actor actor, float moveV, Func<bool> stopCondition, Collision onCollide = null, Solid pusher = null)
+        {
+            actor.movementCounter.Y += moveV;
+            int num = (int)Math.Round(actor.movementCounter.Y, MidpointRounding.ToEven);
+            if (num != 0)
+            {
+                actor.movementCounter.Y -= num;
+                return actor.MoveVExactUntil(num, stopCondition, onCollide, pusher);
+            }
+            return false;
+        }
+
+        public static bool MoveHUntil(this Actor actor, float moveH, Func<bool> stopCondition, Collision onCollide = null, Solid pusher = null)
+        {
+            actor.movementCounter.X += moveH;
+            int num = (int)Math.Round(actor.movementCounter.X, MidpointRounding.ToEven);
+            if (num != 0)
+            {
+                actor.movementCounter.X -= num;
+                return actor.MoveHExactUntil(num, stopCondition, onCollide, pusher);
+            }
+            return false;
+        }
+
+        public static void MoveToXUntil(this Actor actor, float toX, Func<bool> stopCondition, Collision onCollide = null)
+        {
+            actor.MoveHUntil((float)((double)toX - (double)actor.Position.X - (double)actor.movementCounter.X), stopCondition, onCollide);
+        }
+
+        public static void MoveToYUntil(this Actor actor, float toY, Func<bool> stopCondition, Collision onCollide = null)
+        {
+            actor.MoveVUntil((float)((double)toY - (double)actor.Position.Y - (double)actor.movementCounter.Y), stopCondition, onCollide);
+        }
+        #endregion
+
+        #region Naive Move Until
+        public static void NaiveMoveHExactUntil(this Actor actor, int moveH, Func<bool> stopCondition)
+        {
+            Vector2 targetPosition = actor.Position + Vector2.UnitX * moveH;
+            int num = Math.Sign(moveH);
+            int num2 = 0;
+            while (moveH != 0 && !stopCondition())
+            {
+                num2 += num;
+                moveH -= num;
+                actor.X += num;
+            }
+            return;
+        }
+
+        public static void NaiveMoveVExactUntil(this Actor actor, int moveV, Func<bool> stopCondition)
+        {
+            Vector2 targetPosition = actor.Position + Vector2.UnitY * moveV;
+            int num = Math.Sign(moveV);
+            int num2 = 0;
+            while (moveV != 0 && !stopCondition())
+            {
+                num2 += num;
+                moveV -= num;
+                actor.X += num;
+            }
+            return;
+        }
+
+        public static void NaiveMoveVUntil(this Actor actor, float moveV, Func<bool> stopCondition)
+        {
+            actor.movementCounter.Y += moveV;
+            int num = (int)Math.Round(actor.movementCounter.Y, MidpointRounding.ToEven);
+            if (num != 0)
+            {
+                actor.movementCounter.Y -= num;
+                actor.NaiveMoveVExactUntil(num, stopCondition);
+            }
+            return ;
+        }
+
+        public static void NaiveMoveHUntil(this Actor actor, float moveH, Func<bool> stopCondition)
+        {
+            actor.movementCounter.X += moveH;
+            int num = (int)Math.Round(actor.movementCounter.X, MidpointRounding.ToEven);
+            if (num != 0)
+            {
+                actor.movementCounter.X -= num;
+                actor.NaiveMoveHExactUntil(num, stopCondition);
+            }
+            return;
+        }
+
+        public static void NaiveMoveToXUntil(this Actor actor, float toX, Func<bool> stopCondition)
+        {
+            actor.NaiveMoveHUntil((float)((double)toX - (double)actor.Position.X - (double)actor.movementCounter.X), stopCondition);
+        }
+
+        public static void NaiveMoveToYUntil(this Actor actor, float toY, Func<bool> stopCondition)
+        {
+            actor.NaiveMoveVUntil((float)((double)toY - (double)actor.Position.Y - (double)actor.movementCounter.Y), stopCondition);
+        }
+        #endregion
         #endregion
 
         #region Scene
@@ -164,7 +341,7 @@ namespace Celeste.Mod.Verillia.Utils
                 if (ret == null ||
                     (position - check.Position).LengthSquared() < (position - ret.Position).LengthSquared())
                 {
-                    ret = (T)check;
+                    ret = check as T;
                     continue; 
                 }
             }
@@ -509,9 +686,9 @@ namespace Celeste.Mod.Verillia.Utils
         public const int X_Left = -1;
         public const int X_Right = 1;
 
-        public static readonly Vector2 Up = Vector2.UnitY * Y_Up;
-        public static readonly Vector2 Down = Vector2.UnitY * Y_Down;
-        public static readonly Vector2 Left = Vector2.UnitX * X_Left;
-        public static readonly Vector2 Right = Vector2.UnitX * X_Right;
+        public static Vector2 Up => Vector2.UnitY * Y_Up;
+        public static Vector2 Down => Vector2.UnitY * Y_Down;
+        public static Vector2 Left => Vector2.UnitX * X_Left;
+        public static Vector2 Right => Vector2.UnitX * X_Right;
     }
 }

@@ -30,16 +30,31 @@ namespace Celeste.Mod.Verillia.Utils
             base.Render();
         }
 
+        public sealed override void PreUpdate()
+        {
+            base.PreUpdate();
+        }
+
+        public sealed override void PostUpdate()
+        {
+            base.PostUpdate();
+        }
+
+        public override void Removed(Entity entity)
+        {
+            base.Removed(entity);
+        }
+
         internal void Move()
         {
             var overpass = actor.GetCounterMovement();
             //Record previous overpass
-            int H = overpass.H;
-            int V = overpass.V;
+            int H = overpass.GoalH;
+            int V = overpass.GoalV;
             var next = Move(overpass.H, overpass.V);
             //Add deltaoverpass
-            overpass.H += H - (int)Math.Round(next.X);
-            overpass.V += V - (int)Math.Round(next.Y);
+            overpass.GoalH += H - (int)Math.Round(next.X);
+            overpass.GoalV += V - (int)Math.Round(next.Y);
         }
 
         public virtual Vector2 GetLiftSpeed(Vector2 orig)

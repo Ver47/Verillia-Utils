@@ -74,10 +74,7 @@ namespace Celeste.Mod.Verillia.Utils
                 getLiftBoost));
 
             t = typeof(On.Celeste.Actor);
-            hooks.Add(t, nameof(On.Celeste.Actor.MoveHExact), MoveHExact);
-            hooks.Add(t, nameof(On.Celeste.Actor.MoveVExact), MoveVExact);
             hooks.Add(t, nameof(On.Celeste.Actor.ctor), Actor_ctor);
-            hooks.Add(t, nameof(On.Celeste.Actor.Update), Actor_Update);
 
             //Entitylist methods
             t = typeof(IL.Monocle.EntityList);
@@ -318,49 +315,10 @@ namespace Celeste.Mod.Verillia.Utils
             return speed;
         }
 
-        private bool MoveHExact(On.Celeste.Actor.orig_MoveHExact orig, Actor self, int moveH, Collision onCollide = null, Solid pusher = null)
-        {
-            int goalpos = (int)self.Position.X + moveH;
-            bool ret = orig(self, moveH, onCollide, pusher);
-            if (ret || pusher is not null)
-                return ret;
-            var over = self.GetCounterMovement();
-            if (over.Active)
-                over.H += goalpos - (int)self.Position.X;
-            return ret;
-        }
-
-        private bool MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int moveV, Collision onCollide = null, Solid pusher = null)
-        {
-            int goalpos = (int)self.Position.Y + moveV;
-            bool ret = orig(self, moveV, onCollide, pusher);
-            if (ret || pusher is not null)
-                return ret;
-            var over = self.GetCounterMovement();
-            if (over.Active)
-                over.V += goalpos - (int)self.Position.Y;
-            return ret;
-        }
-
         private void Actor_ctor(On.Celeste.Actor.orig_ctor orig, Actor self, Vector2 pos)
         {
             orig(self, pos);
             self.GetCounterMovement();
-        }
-
-        private void Actor_Update(On.Celeste.Actor.orig_Update orig, Actor self)
-        {
-            orig(self);
-            var Components = self.Components;
-            var trueLockMode = Components.LockMode;
-            Components.LockMode = ComponentList.LockModes.Locked;
-            foreach (SpeedBonus sped in Components.GetAll<SpeedBonus>())
-            {
-                //Run moving code
-                sped.Move();
-            }
-            self.GetCounterMovement().Reset();
-            Components.LockMode = trueLockMode;
         }
         #endregion
 

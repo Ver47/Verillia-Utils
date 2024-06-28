@@ -9,22 +9,22 @@ using Microsoft.Xna.Framework;
 
 namespace Celeste.Mod.Verillia.Utils
 {
-    public class CounterMovement : Component
+    public sealed class CounterMovement : ComplexComponent
     {
-        public int H { get; internal set; }
-        public int V { get; internal set; }
+        public int H { get; private set; }
+        public int V { get; private set; }
 
         public int GoalH { get; internal set; }
         public int GoalV { get; internal set; }
 
         internal CounterMovement() : base (true, false)
         {
-            H = V = 0;
+            PostUpdate();
         }
 
-        internal void Reset()
+        public override void PostUpdate()
         {
-            H = V = 0;
+            GoalH = GoalV = H = V = 0;
         }
 
         internal void RemoveH(int h)
