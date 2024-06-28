@@ -19,25 +19,25 @@ namespace Celeste.Mod.Verillia.Utils.Entities
 
         internal class SpeedDistort : SpeedBonus
         {
-            Vector2 Speed;
+            Vector2 ShiftSpeed;
             bool AffectLiftBoostCap = true;
             Shifter source;
 
             public SpeedDistort(Vector2 speed, Shifter shifter, bool affectLiftBoostCap = true)
             {
-                Speed = speed;
+                ShiftSpeed = speed;
                 source = shifter;
                 AffectLiftBoostCap = affectLiftBoostCap;
             }
 
             public override Vector2 GetLiftSpeed(Vector2 orig)
             {
-                return orig-Speed;
+                return orig-ShiftSpeed;
             }
 
             public override Vector2 GetLiftSpeedCapShift(Vector2 orig, Vector2 whatever)
             {
-                return orig - Speed;
+                return orig - ShiftSpeed;
             }
 
             public override Vector2 Move(int overH, int overV)
@@ -50,14 +50,14 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                     return base.Move(overH, overV);
                 }
                 // consider move
-                Vector2 move = Speed * Engine.DeltaTime;
+                Vector2 move = ShiftSpeed * Engine.DeltaTime;
                 Vector2 og = move;
                 Vector2 over = new Vector2(overH, overV);
 
                 Vector2 origPos = actor.ExactPosition;
                 Vector2 origOver = over;
 
-                int SpeedSign = Math.Sign(Speed.X);
+                int SpeedSign = Math.Sign(ShiftSpeed.X);
                 if (SpeedSign != 0)
                 {
                     if (overH != 0) //determine if the overpass actually matters
@@ -102,7 +102,7 @@ namespace Celeste.Mod.Verillia.Utils.Entities
                         RemoveSelf();
                     }
                 }
-                SpeedSign = Math.Sign(Speed.Y);
+                SpeedSign = Math.Sign(ShiftSpeed.Y);
                 if (SpeedSign != 0)
                 {
                     if (overV != 0) //determine if the overpass actually matters

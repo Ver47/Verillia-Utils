@@ -607,6 +607,66 @@ namespace Celeste.Mod.Verillia.Utils
             }
             return null;
         }
+
+        public static void SetValueOfMember<From>(this From obj, string Name, object value)
+        {
+            var info = typeof(From).GetFieldOrPropertyInheritance(Name);
+            if (info is PropertyInfo property)
+            {
+                property.SetValue(obj, value);
+                return;
+            }
+            if (info is FieldInfo field)
+            {
+                field.SetValue(obj, value);
+            }
+            return;
+        }
+
+        public static void SetValueOfMember<From>(this From obj, string Name, object value, BindingFlags bindingAttr)
+        {
+            var info = typeof(From).GetFieldOrPropertyInheritance(Name, bindingAttr);
+            if (info is PropertyInfo property)
+            {
+                property.SetValue(obj, value);
+                return;
+            }
+            if (info is FieldInfo field)
+            {
+                field.SetValue(obj, value);
+            }
+            return;
+        }
+
+        public static void SetValueOfMember(this object obj, string Name, object value)
+        {
+            var info = obj.GetType().GetFieldOrPropertyInheritance(Name);
+            if (info is PropertyInfo property)
+            {
+                property.SetValue(obj, value);
+                return;
+            }
+            if (info is FieldInfo field)
+            {
+                field.SetValue(obj, value);
+            }
+            return;
+        }
+
+        public static void SetValueOfMember(this object obj, string Name, BindingFlags bindingAttr, object value)
+        {
+            var info = obj.GetType().GetFieldOrPropertyInheritance(Name, bindingAttr);
+            if (info is PropertyInfo property)
+            {
+                property.SetValue(obj, value);
+                return;
+            }
+            if (info is FieldInfo field)
+            {
+                field.SetValue(obj, value);
+            }
+            return;
+        }
         #endregion
 
         #endregion

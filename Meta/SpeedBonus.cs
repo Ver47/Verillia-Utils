@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Monocle;
 using Microsoft.Xna.Framework;
+using System.Reflection;
 
 
 namespace Celeste.Mod.Verillia.Utils
@@ -13,6 +14,51 @@ namespace Celeste.Mod.Verillia.Utils
     {
         protected Actor actor => EntityAs<Actor>();
         protected Player player => EntityAs<Player>();
+        protected Vector2 ActorSpeed
+        {
+            get
+            {
+                if (!SpeedGettable)
+                    return Vector2.Zero;
+                return (Vector2)actor.GetValueOfMember("Speed",
+                    BindingFlags.Instance | BindingFlags.Public);
+            }
+            set
+            {
+                actor.SetValueOfMember("Speed", value,
+                    BindingFlags.Instance | BindingFlags.Public);
+            }
+        }
+        protected bool SpeedGettable
+        {
+            get
+            {
+                var info = actor.GetType().GetFieldOrPropertyInheritance("Speed",
+                    BindingFlags.Instance | BindingFlags.Public);
+                if (info == null)
+                    return false;
+                if (info is PropertyInfo prop)
+                {
+                    return prop.CanRead;
+                }
+                return true;
+            }
+        }
+        protected bool SpeedSettable
+        {
+            get
+            {
+                var info = actor.GetType().GetFieldOrPropertyInheritance("Speed",
+                    BindingFlags.Instance | BindingFlags.Public);
+                if (info == null)
+                    return false;
+                if (info is PropertyInfo prop)
+                {
+                    return prop.CanWrite;
+                }
+                return true;
+            }
+        }
 
         internal SpeedBonus()
             : base(true, false)
